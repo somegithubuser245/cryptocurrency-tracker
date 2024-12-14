@@ -1,8 +1,7 @@
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
-
+import httpx
 
 url = "https://api.coingecko.com/api/v3/simple/price/"
 
@@ -10,7 +9,9 @@ headers = {"accept": "application/json"}
 params = {"ids" : "bitcoin",
            "vs_currencies" : "usd"}
 
-response = requests.get(url, headers=headers, params=params)
+
+response = httpx.get(url, headers=headers, params=params)
+
 
 print(response.text)
 
