@@ -1,39 +1,39 @@
-from fastapi import FastAPI
+from typing import Annotated
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
-import httpx
+from dotenv import load_dotenv
 
-url = "https://api.coingecko.com/api/v3/simple/price/"
+load_dotenv()
 
-headers = {"accept": "application/json"}
-params = {"ids" : "bitcoin",
-           "vs_currencies" : "usd"}
+from . import gecko
 
+app = FastAPI()
 
-response = httpx.get(url, headers=headers, params=params)
-
-
-print(response.text)
-
-app = FastAPI(
-    title="Crypto Analytics API",
-    description="API for cryptocurrency data analytics",
-    version="0.1.0"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-class Currency(BaseModel):
-    name: str
-    price: float
+cryptoFetcher = gecko.CryptoFetcher()
 
-@app.get("/health")
-async def health_check():
-    return {"status": "ok", "message": "Service is running"}
+@app.get("/api/crypto/{crypto_id}/history")
+async def get_crypto_history(
+        crypto_id: str,
+        days: int = 7
+):
+    try:
+        data = await cryptoFetcher.get_price_history(crypto_id, days)
+        return {
+            "crypto_id" : crypto_id,
+            "data" : data,
+            "granularity": "5-minute" if days == 1 else "hourly" if days <= 90 else "daily"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.put("/currencies/{currency_id}")
-def update_currency(currency_id: int, currency: Currency):
-    return {"currency_name": currency.name, "currency_price": currency.price}
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
