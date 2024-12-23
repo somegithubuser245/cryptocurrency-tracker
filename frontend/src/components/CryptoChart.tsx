@@ -49,8 +49,8 @@ const CryptoChart: React.FC = () => {
     // Create chart instance
     chart.current = createChart(chartContainerRef.current, {
       layout: {
-        background: { color: '#ffffff' },
-        textColor: '#333',
+        background: { color: '#222' },
+        textColor: '#DDD',
       },
       width: chartContainerRef.current.clientWidth,
       height: 500,
@@ -58,22 +58,40 @@ const CryptoChart: React.FC = () => {
         timeVisible: true,
         secondsVisible: false,
       },
-      crosshair: {
-        mode: 1
-      },
       grid: {
-        vertLines: { color: '#f0f0f0' },
-        horzLines: { color: '#f0f0f0' },
+        vertLines: { color: '#444' },
+        horzLines: { color: '#444' },
       },
+      crosshair: {
+        // Change mode from default 'magnet' to 'normal'.
+        // Allows the crosshair to move freely without snapping to datapoints
+        mode: 0,
+
+        // Vertical crosshair line (showing Date in Label)
+        vertLine: {
+            color: '#C3BCDB44',
+            labelBackgroundColor: '#9B7DFF',
+        },
+
+        // Horizontal crosshair line (showing Price in Label)
+        horzLine: {
+            color: '#9B7DFF',
+            labelBackgroundColor: '#9B7DFF',
+        },
+    },
     });
+
+    chart.current.timeScale().applyOptions({
+        borderColor: '#71649C'
+    })
 
     // Create candlestick series
     const candlestickSeries = chart.current.addCandlestickSeries({
-      upColor: '#16a34a',
-      downColor: '#dc2626',
-      borderVisible: false,
-      wickUpColor: '#16a34a',
-      wickDownColor: '#dc2626',
+        wickUpColor: 'rgb(54, 116, 217)',
+        upColor: 'rgb(54, 116, 217)',
+        wickDownColor: 'rgb(225, 50, 85)',
+        downColor: 'rgb(225, 50, 85)',
+        borderVisible: false,
     });
 
     // Add data
@@ -138,37 +156,36 @@ const CryptoChart: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="border rounded-lg shadow-lg bg-white">
-        <div className="p-4 border-b">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800">Crypto OHLC Chart</h2>
-            <div className="flex gap-4">
-              <select
-                value={timeRange}
-                onChange={handleTimeRangeChange}
-                className="px-4 py-2 border rounded-md bg-white shadow-sm"
-              >
-                {TIME_RANGES.map(range => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedCrypto}
-                onChange={handleCryptoChange}
-                className="px-4 py-2 border rounded-md bg-white shadow-sm"
-              >
-                {CRYPTO_OPTIONS.map(crypto => (
-                  <option key={crypto.id} value={crypto.id}>
-                    {crypto.name}
-                  </option>
-                ))}
-              </select>
+    <div className="w-full bg-black rounded-xl p-3">
+            <div className="flex flex-row justify-end pb-2">
+            <div className="basis-1/2 justify-self-start self-center">
+                <h2 className='text-white text-left text-xl mx-3'>{selectedCrypto.toUpperCase()} OHLC Chart</h2>
             </div>
-          </div>
-        </div>
+              <div className='flex flex-row basis-1/2 justify-end'>
+                <select
+                    value={timeRange}
+                    onChange={handleTimeRangeChange}
+                    className="m-2 p-2 rounded-xl border-2 border-trasparent"
+                >
+                    {TIME_RANGES.map(range => (
+                    <option key={range.value} value={range.value}>
+                        {range.label}
+                    </option>
+                    ))}
+                </select>
+                <select
+                    value={selectedCrypto}
+                    onChange={handleCryptoChange}
+                    className="m-2 p-2 rounded-xl border-2"
+                >
+                    {CRYPTO_OPTIONS.map(crypto => (
+                    <option key={crypto.id} value={crypto.id}>
+                        {crypto.name}
+                    </option>
+                    ))}
+                </select>
+              </div>
+            </div>
         <div className="relative">
           {isLoading && (
             <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
@@ -180,9 +197,8 @@ const CryptoChart: React.FC = () => {
               <div className="text-red-500">{error}</div>
             </div>
           )}
-          <div ref={chartContainerRef} className="p-4" />
+          <div ref={chartContainerRef} className="p-1" />
         </div>
-      </div>
     </div>
   );
 };
