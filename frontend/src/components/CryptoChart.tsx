@@ -1,7 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart } from 'lightweight-charts';
+import { createChart, IChartApi, Time, ISeriesApi, CandlestickData } from 'lightweight-charts';
 
-const CRYPTO_OPTIONS = [
+// Type definitions
+interface CryptoOption {
+  id: string;
+  name: string;
+}
+
+interface TimeRange {
+  value: string;
+  label: string;
+}
+
+interface OHLCData {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
+const CRYPTO_OPTIONS: CryptoOption[] = [
   { id: 'bitcoin', name: 'Bitcoin' },
   { id: 'ethereum', name: 'Ethereum' },
   { id: 'solana', name: 'Solana' },
@@ -9,22 +28,24 @@ const CRYPTO_OPTIONS = [
   { id: 'cardano', name: 'Cardano' }
 ];
 
-const TIME_RANGES = [
+const TIME_RANGES: TimeRange[] = [
   { value: '1', label: '24 Hours' },
   { value: '7', label: '7 Days' },
   { value: '30', label: '30 Days' },
   { value: '90', label: '90 Days' }
 ];
 
-const CryptoChart = () => {
-  const chartContainerRef = useRef();
-  const chart = useRef();
-  const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
-  const [timeRange, setTimeRange] = useState('7');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+const CryptoChart: React.FC = () => {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chart = useRef<IChartApi | null>(null);
+  const [selectedCrypto, setSelectedCrypto] = useState<string>('bitcoin');
+  const [timeRange, setTimeRange] = useState<string>('7');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!chartContainerRef.current) return;
+
     // Create chart instance
     chart.current = createChart(chartContainerRef.current, {
       layout: {
@@ -56,7 +77,7 @@ const CryptoChart = () => {
     });
 
     // Add data
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       setIsLoading(true);
       setError(null);
       try {
@@ -64,10 +85,10 @@ const CryptoChart = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
-        const data = await response.json();
+        const data: OHLCData[] = await response.json();
         
-        const formattedData = data.map(item => ({
-          time: item.timestamp / 1000, // Convert from milliseconds to seconds for TV charts
+        const formattedData: CandlestickData<Time>[] = data.map(item => ({
+          time: (item.timestamp / 1000) as Time,
           open: item.open,
           high: item.high,
           low: item.low,
@@ -77,9 +98,9 @@ const CryptoChart = () => {
         candlestickSeries.setData(formattedData);
         
         // Fit content
-        chart.current.timeScale().fitContent();
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        chart.current?.timeScale().fitContent();
+      } catch (err) {
+        console.error('Error fetching data:', err);
         setError('Failed to load chart data. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -89,10 +110,12 @@ const CryptoChart = () => {
     fetchData();
 
     // Handle resize
-    const handleResize = () => {
-      chart.current.applyOptions({
-        width: chartContainerRef.current.clientWidth,
-      });
+    const handleResize = (): void => {
+      if (chart.current && chartContainerRef.current) {
+        chart.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+        });
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -100,9 +123,19 @@ const CryptoChart = () => {
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      chart.current.remove();
+      if (chart.current) {
+        chart.current.remove();
+      }
     };
   }, [selectedCrypto, timeRange]);
+
+  const handleCryptoChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedCrypto(e.target.value);
+  };
+
+  const handleTimeRangeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setTimeRange(e.target.value);
+  };
 
   return (
     <div className="w-full">
@@ -113,7 +146,7 @@ const CryptoChart = () => {
             <div className="flex gap-4">
               <select
                 value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
+                onChange={handleTimeRangeChange}
                 className="px-4 py-2 border rounded-md bg-white shadow-sm"
               >
                 {TIME_RANGES.map(range => (
@@ -124,7 +157,7 @@ const CryptoChart = () => {
               </select>
               <select
                 value={selectedCrypto}
-                onChange={(e) => setSelectedCrypto(e.target.value)}
+                onChange={handleCryptoChange}
                 className="px-4 py-2 border rounded-md bg-white shadow-sm"
               >
                 {CRYPTO_OPTIONS.map(crypto => (
