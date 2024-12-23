@@ -1,129 +1,163 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ComposedChart, Bar } from 'recharts';
+import axios from 'axios';
 
 const CryptoTracker = () => {
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
-  const [priceData, setPriceData] = useState([]);
+  const [candleData, setCandleData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [timeframe, setTimeframe] = useState('7');
+  const [yDomain, setYDomain] = useState([0, 0]);
 
-  const cryptoOptions = [
-    { id: 'bitcoin', name: 'Bitcoin' },
-    { id: 'ethereum', name: 'Ethereum' },
-    { id: 'dogecoin', name: 'Dogecoin' },
-    { id: 'cardano', name: 'Cardano' },
-    { id: 'solana', name: 'Solana' }
-  ];
-
-  const fetchPriceData = async (cryptoId) => {
+  const fetchOHLCData = async (cryptoId, days) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/api/crypto/${cryptoId}/history`);
-      const data = await response.json();
-      setPriceData(data.data);
+      const response = await axios.get(`http://localhost:8000/api/crypto/${cryptoId}/ohlc?days=${days}`);
+      
+      // Process the data with improved calculations
+      const processedData = response.data.map(candle => ({
+        ...candle,
+        bodyHeight: Math.abs(candle.close - candle.open),
+        bodyStart: Math.min(candle.open, candle.close),
+        wickHeight: candle.high - candle.low,
+        wickStart: candle.low,
+        color: candle.close >= candle.open ? '#16a34a' : '#dc2626'
+      }));
+
+      // Calculate domain with nice round numbers
+      const yMin = Math.min(...processedData.map(d => d.low));
+      const yMax = Math.max(...processedData.map(d => d.high));
+      
+      setYDomain([yMin, yMax]);
+      setCandleData(processedData);
     } catch (error) {
-      console.error('Error fetching price data:', error);
-      setError('Failed to load price data');
+      console.error('Error fetching OHLC data:', error);
+      setError('Failed to load OHLC data');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPriceData(selectedCrypto);
-  }, [selectedCrypto]);
+    fetchOHLCData(selectedCrypto, timeframe);
+  }, [selectedCrypto, timeframe]);
 
-  // Find the currently selected crypto name
-  const selectedCryptoName = cryptoOptions.find(crypto => crypto.id === selectedCrypto)?.name;
+  const CustomCandlestick = (props) => {
+    const { x, y, width, height, payload } = props;
+    if (!payload) return null;
+
+    // Calculate relative positions within the chart
+    const totalRange = yDomain[1] - yDomain[0];
+    const wickBottom = ((payload.low - yDomain[0]) / totalRange) * height;
+    const wickTop = ((payload.high - yDomain[0]) / totalRange) * height;
+    const bodyBottom = ((payload.bodyStart - yDomain[0]) / totalRange) * height;
+    const bodyTop = ((payload.bodyStart + payload.bodyHeight - yDomain[0]) / totalRange) * height;
+
+    return (
+      <g>
+        {/* Wick line */}
+        <line
+          x1={x + width / 2}
+          y1={height - wickBottom}
+          x2={x + width / 2}
+          y2={height - wickTop}
+          stroke={payload.color}
+          strokeWidth={1}
+        />
+        {/* Body rectangle */}
+        <rect
+          x={x + width * 0.25}
+          y={height - bodyTop}
+          width={width * 0.5}
+          height={Math.abs(bodyTop - bodyBottom)}
+          fill={payload.color}
+        />
+      </g>
+    );
+  };
 
   return (
     <div className="w-full h-screen p-4">
-        <div className="h-full bg-white rounded-lg shadow-lg">
-        <div className="bg-white rounded-lg shadow-lg">
-          {/* Header */}
-          <div className="p-6 border-b">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Crypto Price Tracker</h2>
-                <p className="text-gray-600 mt-1">Tracking {selectedCryptoName}</p>
-              </div>
+      <div className="h-full bg-white rounded-lg shadow-lg">
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800">Crypto OHLC Chart</h2>
+            <div className="flex gap-4">
+              <select
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="px-4 py-2 border rounded-md bg-white shadow-sm"
+              >
+                <option value="1">24 Hours</option>
+                <option value="7">7 Days</option>
+                <option value="30">30 Days</option>
+              </select>
               <select
                 value={selectedCrypto}
                 onChange={(e) => setSelectedCrypto(e.target.value)}
-                className="px-4 py-2 border rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
+                className="px-4 py-2 border rounded-md bg-white shadow-sm"
               >
-                {cryptoOptions.map(crypto => (
-                  <option key={crypto.id} value={crypto.id}>
-                    {crypto.name}
-                  </option>
-                ))}
+                <option value="bitcoin">Bitcoin</option>
+                <option value="ethereum">Ethereum</option>
               </select>
             </div>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="p-6">
-            {error && (
-              <div className="text-red-500 text-center py-4">
-                {error}
-              </div>
-            )}
-            
-            {isLoading ? (
-              <div className="h-96 flex items-center justify-center">
-                <div className="text-gray-600">Loading...</div>
-              </div>
-            ) : (
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={priceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="datetime"
-                      tickFormatter={(value) => {
-                        const date = new Date(value);
-                        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-                      }}
-                    />
-                    <YAxis />
-                    <Tooltip
-                      labelFormatter={(value) => new Date(value).toLocaleString()}
-                      formatter={(value) => [`$${value.toFixed(2)}`, selectedCryptoName]}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="price"
-                      stroke="#2563eb"
-                      name={selectedCryptoName}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-            
-            {!isLoading && !error && priceData.length > 0 && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Current Price</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      ${priceData[priceData.length - 1].price.toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Last Updated</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {new Date(priceData[priceData.length - 1].datetime).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="p-4 h-[calc(100%-5rem)]">
+          {isLoading ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-gray-600">Loading...</div>
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center">{error}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={candleData}
+                margin={{ top: 10, right: 30, left: 70, bottom: 30 }}
+              >
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  height={50}
+                />
+                <YAxis
+                  type="number"
+                  domain={[90000, 100000]}
+                  tickFormatter={(value) => `${value.toLocaleString()}`}
+                  width={60}
+                  scale="linear"
+                  interval={0}
+                  allowDataOverflow={false}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-2 border rounded shadow">
+                          <p>Time: {new Date(data.timestamp).toLocaleString()}</p>
+                          <p>Open: ${data.open.toLocaleString()}</p>
+                          <p>High: ${data.high.toLocaleString()}</p>
+                          <p>Low: ${data.low.toLocaleString()}</p>
+                          <p>Close: ${data.close.toLocaleString()}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar
+                  dataKey="wickHeight"
+                  shape={<CustomCandlestick />}
+                  isAnimationActive={false}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

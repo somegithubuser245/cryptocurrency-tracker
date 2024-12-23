@@ -16,12 +16,12 @@ class CryptoFetcher:
             "x-cg-demo-api-key": self.api_key
         }
 
-    async def get_price_history(self, coin_id: str, days: int = 7):
+    async def get_price_stats(self, coin_id: str, days: int = 7, type: str = "market_chart"):
         if days > 365:
             raise ValueError("Free tier only 365 days of historical data. Pay money, bitch!")
 
         try:
-            url = f"{self.base_url}/coins/{coin_id}/market_chart"
+            url = f"{self.base_url}/coins/{coin_id}/{type}"
             params = {
                 "vs_currency" : "usd",
                 "days" : days,
@@ -38,17 +38,39 @@ class CryptoFetcher:
             if response.status_code == 429:
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
             
-            formatted_data = [{
-                "datetime": datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S'),
-                "price": price
-            } for timestamp, price in data["prices"]]
-
-            return formatted_data
+            if type == "market_chart":
+                return self.format_data_market_chart(data)
+            
+            return self.format_data_ohlc(data)
+            
             
             
 
         except Exception as e:
             raise HTTPException(status_code=500, detail = str(e))
+        
+    def format_data_market_chart(self, data):
+        formatted_data = [{
+                "datetime": datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S'),
+                "price": price
+            } for timestamp, price in data["prices"]]
+
+        return formatted_data
+
+    def format_data_ohlc(self, data):
+        formatted_data = []
+        for entry in data:
+            timestamp, open_price, high, low, close = entry
+            formatted_data.append({
+                "timestamp": timestamp,
+                "open": open_price,
+                "high": high,
+                "low": low,
+                "close": close
+            })
+        
+        return formatted_data
+
         
                 
             

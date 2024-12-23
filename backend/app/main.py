@@ -26,7 +26,7 @@ async def get_crypto_history(
         days: int = 7
 ):
     try:
-        data = await cryptoFetcher.get_price_history(crypto_id, days)
+        data = await cryptoFetcher.get_price_history(crypto_id, days, "market_chart")
         return {
             "crypto_id" : crypto_id,
             "data" : data,
@@ -35,5 +35,15 @@ async def get_crypto_history(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/api/crypto/{crypto_id}/ohlc")
+async def get_ohlc(
+    crypto_id: str,
+    days: int = 7
+):
+    try:
+        data = await cryptoFetcher.get_price_stats(crypto_id, days, "ohlc")
+        return data
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
