@@ -10,7 +10,7 @@ class CryptoFetcher:
     def __init__(self):
         load_dotenv()
         self.client = httpx.AsyncClient()
-        self.base_url = "https://api.coingecko.com/api/v3"
+        self.base_url = os.getenv("COINGECKO_API_URL")
         self.api_key = os.getenv("COINGECKO_API_KEY")
         self.headers = {
             "x-cg-demo-api-key": self.api_key
@@ -21,18 +21,7 @@ class CryptoFetcher:
             raise ValueError("Free tier only 365 days of historical data. Pay money, bitch!")
 
         try:
-            url = f"{self.base_url}/coins/{coin_id}/{type}"
-            params = {
-                "vs_currency" : "usd",
-                "days" : days,
-            }
-
-            response = await self.client.get(
-                url, 
-                headers = self.headers, 
-                params =  params)
-            
-
+            response = await self.getResponse(days, coin_id)
             data = response.json()
 
             if response.status_code == 429:
@@ -42,9 +31,6 @@ class CryptoFetcher:
                 return self.format_data_market_chart(data)
             
             return self.format_data_ohlc(data)
-            
-            
-            
 
         except Exception as e:
             raise HTTPException(status_code=500, detail = str(e))
@@ -70,6 +56,19 @@ class CryptoFetcher:
             })
         
         return formatted_data
+    
+    async def getResponse(self, days: int, coin_id: str):
+        url = f"{self.base_url}/coins/{coin_id}/{type}"
+
+        params = {
+            "vs_currency" : "usd",
+            "days" : days,
+        }
+        
+        return await self.client.get(
+                url, 
+                headers = self.headers, 
+                params =  params)
 
         
                 
