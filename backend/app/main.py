@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import gecko
+from gecko import CryptoFetcher
 
 app = FastAPI()
 
@@ -12,7 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-cryptoFetcher = gecko.CryptoFetcher()
+cryptoFetcher = CryptoFetcher()
 
 @app.get("/api/crypto/{crypto_id}/history")
 async def get_crypto_history(
