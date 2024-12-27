@@ -21,7 +21,7 @@ class CryptoFetcher:
             raise ValueError("Free tier only 365 days of historical data. Pay money, bitch!")
 
         try:
-            response = await self.getResponse(days, coin_id)
+            response = await self.getResponse(days, coin_id, type)
             data = response.json()
 
             if response.status_code == 429:
@@ -35,6 +35,19 @@ class CryptoFetcher:
         except Exception as e:
             raise HTTPException(status_code=500, detail = str(e))
         
+    async def getResponse(self, days: int, coin_id: str, type: str):
+        url = f"{self.base_url}/coins/{coin_id}/{type}"
+
+        params = {
+            "vs_currency" : "usd",
+            "days" : days,
+        }
+        
+        return await self.client.get(
+                url, 
+                headers = self.headers, 
+                params =  params)
+    
     def format_data_market_chart(self, data):
         formatted_data = [{
                 "datetime": datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S'),
@@ -57,18 +70,6 @@ class CryptoFetcher:
         
         return formatted_data
     
-    async def getResponse(self, days: int, coin_id: str):
-        url = f"{self.base_url}/coins/{coin_id}/{type}"
-
-        params = {
-            "vs_currency" : "usd",
-            "days" : days,
-        }
-        
-        return await self.client.get(
-                url, 
-                headers = self.headers, 
-                params =  params)
 
         
                 
