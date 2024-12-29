@@ -5,6 +5,7 @@ from gecko import CryptoFetcher
 from caching import Cacher
 import uvicorn
 from logger_config import setup_logger
+from models import PriceRequest
 
 logger = setup_logger()
 
@@ -28,7 +29,8 @@ async def get_data(
     chart_type: str = "ohlc",
 ):
     try:
-        data = await cryptoFetcher.get_price_stats(crypto_id, days, chart_type) # if no redis available, return data staight from Coingecko API
+        request = PriceRequest(crypto_id=crypto_id, days=days, chart_type=chart_type)
+        data = await cryptoFetcher.get_price_stats(request) # if no redis available, return data staight from Coingecko API
         return data
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

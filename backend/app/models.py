@@ -11,3 +11,8 @@ class OHLC(BaseModel):
 class SimplePrice(BaseModel):
     timestamp: datetime
     price: int
+
+class PriceRequest(BaseModel):
+    crypto_id: str
+    days: int = 7
+    chart_type: str

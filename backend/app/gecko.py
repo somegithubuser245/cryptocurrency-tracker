@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from caching import Cacher
 from logger_config import setup_logger
+from models import PriceRequest
 
 logger = setup_logger()
 
@@ -20,61 +21,56 @@ class CryptoFetcher:
             "x-cg-demo-api-key": self.api_key
         }
 
-    async def get_price_stats(self, crypto_id: str, days: int = 7, chart_type: str = "market_chart"):
-        if days > 365:
+    async def get_price_stats(self, reqest: PriceRequest):
+        if reqest.days > 365:
             raise ValueError("Free tier only 365 days of historical data. Pay money, bitch!")
 
         try:
-            cache = self.getCache(crypto_id=crypto_id, days=days, chart_type=chart_type)
+            cache = self.getCache(reqest)
             if cache is not None:
                 logger.debug("Cache is accepted and returned") 
                 return self.format_data_ohlc(cache)
 
-            response = await self.getResponse(days, crypto_id, chart_type)
+            response = await self.getResponse(reqest)
             data = response.json()
 
             if response.status_code == 429:
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
             
-            if chart_type == "market_chart":
+            if reqest.chart_type == "market_chart":
                 return self.format_data_market_chart(data)
             
             
             formatted_data = self.format_data_ohlc(data)
-            self.setCache(data, crypto_id=crypto_id, days=days, chart_type=chart_type)
+            self.setCache(data, reqest)
             return formatted_data
 
         except Exception as e:
             raise HTTPException(status_code=500, detail = str(e))
         
-    def getCache(self, days: int, crypto_id: str, chart_type: str):
-        # try:
-        #     return self.r.get(crypto_id, days, chart_type) # redis fetch
-        # except Exception as e:
-        #     logger.debug(str(e))
-        #     return None
-        return self.r.get(crypto_id, days, chart_type)
+    def getCache(self, request: PriceRequest):
+        return self.r.get(request)
 
 
-    def setCache(self, data, days: int, crypto_id: str, chart_type: str):
+    def setCache(self, data, request: PriceRequest):
         try:
             logger.debug('Setting cache')
-            self.r.set(data, crypto_id, days, chart_type)
+            self.r.set(data, request)
         except Exception as e:
             logger.debug(str(e))
             
         
-    async def getResponse(self, days: int, crypto_id: str, chart_type: str):
-        url = f"{self.base_url}/coins/{crypto_id}/{chart_type}"
+    async def getResponse(self, request: PriceRequest):
+        url = f"{self.base_url}/coins/{request.crypto_id}/{request.chart_type}"
 
         params = {
             "vs_currency" : "usd",
-            "days" : days,
+            "days" : request.days,
         }
         
         return await self.client.get(
                 url, 
-                headers = self.headers, 
+                headers = self.headers,
                 params =  params)
     
     def format_data_market_chart(self, data):
