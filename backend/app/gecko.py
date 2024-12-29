@@ -1,13 +1,18 @@
-from fastapi import HTTPException, logger
+from fastapi import HTTPException
 import httpx
 from datetime import datetime
 from time import time
 import os
 from dotenv import load_dotenv
+from caching import Cacher
+from logger_config import setup_logger
+
+logger = setup_logger()
 
 class CryptoFetcher:
     def __init__(self):
         load_dotenv()
+        self.r = Cacher()
         self.client = httpx.AsyncClient()
         self.base_url = os.getenv("COINGECKO_API_URL")
         self.api_key = os.getenv("COINGECKO_API_KEY")
@@ -15,27 +20,52 @@ class CryptoFetcher:
             "x-cg-demo-api-key": self.api_key
         }
 
-    async def get_price_stats(self, coin_id: str, days: int = 7, type: str = "market_chart"):
+    async def get_price_stats(self, crypto_id: str, days: int = 7, chart_type: str = "market_chart"):
         if days > 365:
             raise ValueError("Free tier only 365 days of historical data. Pay money, bitch!")
 
         try:
-            response = await self.getResponse(days, coin_id, type)
+            cache = self.getCache(crypto_id=crypto_id, days=days, chart_type=chart_type)
+            if cache is not None:
+                logger.debug("Cache is accepted and returned") 
+                return self.format_data_ohlc(cache)
+
+            response = await self.getResponse(days, crypto_id, chart_type)
             data = response.json()
 
             if response.status_code == 429:
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
             
-            if type == "market_chart":
+            if chart_type == "market_chart":
                 return self.format_data_market_chart(data)
             
-            return self.format_data_ohlc(data)
+            
+            formatted_data = self.format_data_ohlc(data)
+            self.setCache(data, crypto_id=crypto_id, days=days, chart_type=chart_type)
+            return formatted_data
 
         except Exception as e:
             raise HTTPException(status_code=500, detail = str(e))
         
-    async def getResponse(self, days: int, coin_id: str, type: str):
-        url = f"{self.base_url}/coins/{coin_id}/{type}"
+    def getCache(self, days: int, crypto_id: str, chart_type: str):
+        # try:
+        #     return self.r.get(crypto_id, days, chart_type) # redis fetch
+        # except Exception as e:
+        #     logger.debug(str(e))
+        #     return None
+        return self.r.get(crypto_id, days, chart_type)
+
+
+    def setCache(self, data, days: int, crypto_id: str, chart_type: str):
+        try:
+            logger.debug('Setting cache')
+            self.r.set(data, crypto_id, days, chart_type)
+        except Exception as e:
+            logger.debug(str(e))
+            
+        
+    async def getResponse(self, days: int, crypto_id: str, chart_type: str):
+        url = f"{self.base_url}/coins/{crypto_id}/{chart_type}"
 
         params = {
             "vs_currency" : "usd",
