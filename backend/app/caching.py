@@ -6,8 +6,8 @@ class Cacher():
     def __init__(self):
         self.redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
-    def set(self, data, reqest: PriceRequest):
-        key = self.construct_key(reqest)
+    def set(self, data, request: PriceRequest):
+        key = self.construct_key(request)
         json_data = json.dumps(data)
         self.redis_client.set(key, json_data)
 

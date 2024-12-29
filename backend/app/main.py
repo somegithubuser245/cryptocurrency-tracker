@@ -1,18 +1,13 @@
 from typing import Annotated
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from gecko import CryptoFetcher
-from caching import Cacher
-import uvicorn
-from logger_config import setup_logger
-from models import PriceRequest
 
-logger = setup_logger()
+from api_call_manager import ApiCallManager
+from models import PriceRequest
 
 # Setup
 app = FastAPI()
-redis = Cacher()
-cryptoFetcher = CryptoFetcher()
+api_call_manager = ApiCallManager()
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,12 +25,9 @@ async def get_data(
 ):
     try:
         request = PriceRequest(crypto_id=crypto_id, days=days, chart_type=chart_type)
-        data = await cryptoFetcher.get_price_stats(request) # if no redis available, return data staight from Coingecko API
+        data = await api_call_manager.get_price_stats(request)
         return data
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
 
 
