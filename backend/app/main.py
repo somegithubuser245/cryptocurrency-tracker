@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from typing import Annotated
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from gecko import CryptoFetcher
 
@@ -17,7 +18,7 @@ cryptoFetcher = CryptoFetcher()
 @app.get("/api/crypto/{crypto_id}/{chart_type}")
 async def get_data(
     crypto_id: str,
-    days: int = 7,
+    days: Annotated[int, Query(gt = 0, lt=365)] = 7,
     chart_type: str = "ohlc",
 ):
     try:

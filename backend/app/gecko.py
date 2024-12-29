@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import HTTPException, logger
 import httpx
 from datetime import datetime
