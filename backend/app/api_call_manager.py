@@ -1,8 +1,6 @@
 from binance import CryptoFetcher
 from caching import Cacher
 from models import PriceRequest
-from datetime import datetime
-from config import logger
 from binance_config import SUPPORTED_PAIRS, TIME_RANGES
 
 class ApiCallManager:
@@ -15,7 +13,7 @@ class ApiCallManager:
         if raw_data is not None:
             return self.format_data(raw_data, request.chart_type)
         
-        response = await self.data_fetcher.getResponse(request)
+        response = await self.data_fetcher.get_response(request)
         raw_data = response.json()
 
         self.redis_cacher.set(raw_data, request) # cache the response
@@ -26,31 +24,16 @@ class ApiCallManager:
         if chart_type == "market_chart":
             return self.format_data_market_chart(data)
         
-        return self.format_data_binance(data)
-
+        return self.format_data_ohlc(data)
+    
+    def get_config_data(self, config_data: str):
+        if config_data == 'timeranges':
+            return TIME_RANGES
+        
+        return SUPPORTED_PAIRS
 
     # Helper functions for API caller to have better format
-    def format_data_market_chart(self, data):
-        formatted_data = [{
-                "datetime": datetime.fromtimestamp(timestamp/1000).strftime('%Y-%m-%d %H:%M:%S'),
-                "price": price
-            } for timestamp, price in data["prices"]]
-
-        return formatted_data
-
     def format_data_ohlc(self, data):
-        formatted_data = []
-        for entry in data:
-            timestamp, open_price, high, low, close = entry
-            formatted_data.append({
-                "timestamp": timestamp,
-                "open": open_price,
-                "high": high,
-                "low": low,
-                "close": close
-            })
-
-    def format_data_binance(self, data):
         formatted_data = []
         for entry in data:
             formatted_data.append({
@@ -63,11 +46,4 @@ class ApiCallManager:
 
         
         return formatted_data
-    
-    def get_config_data(self, config_data: str):
-        if config_data == 'timeranges':
-            return TIME_RANGES
-        
-        return SUPPORTED_PAIRS
-
         

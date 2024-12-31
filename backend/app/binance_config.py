@@ -14,7 +14,6 @@ TIME_RANGES = {
     "30m": "30 minutes",
     "1h": "Hourly",
     "4h": "4 Hours",
-    "12h": "12 Hours",
     "1d": "Daily",
     "1w": "Weekly",
     "1M": "Monthly"

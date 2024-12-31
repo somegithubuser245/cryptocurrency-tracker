@@ -1,18 +1,15 @@
-import os
 import httpx
 
 from config import logger
-from binance_config import BINANCE_API_URL, SUPPORTED_PAIRS
+from binance_config import BINANCE_API_URL
 from models import PriceRequest
-from dotenv import load_dotenv
 
 class CryptoFetcher:
     def __init__(self):
-        load_dotenv()
         self.client = httpx.AsyncClient()
         self.base_url = BINANCE_API_URL
             
-    async def getResponse(self, request: PriceRequest):
+    async def get_response(self, request: PriceRequest):
         url = f"{self.base_url}/klines"
 
         params = {
