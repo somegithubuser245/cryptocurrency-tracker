@@ -3,6 +3,7 @@ from caching import Cacher
 from models import PriceRequest
 from datetime import datetime
 from config import logger
+from binance_config import SUPPORTED_PAIRS, TIME_RANGES
 
 class ApiCallManager:
     def __init__(self):
@@ -10,14 +11,9 @@ class ApiCallManager:
         self.redis_cacher = Cacher()
     
     async def get_price_stats(self, request: PriceRequest):
-        if request.days > 365:
-            logger.debug('Standard demo only has access to 365 days, none more')
-            return
-        
         raw_data = self.redis_cacher.get(request) # look if request is already cached and return it if so
         if raw_data is not None:
             return self.format_data(raw_data, request.chart_type)
-        
         
         response = await self.data_fetcher.getResponse(request)
         raw_data = response.json()
@@ -67,5 +63,11 @@ class ApiCallManager:
 
         
         return formatted_data
+    
+    def get_config_data(self, config_data: str):
+        if config_data == 'timeranges':
+            return TIME_RANGES
+        
+        return SUPPORTED_PAIRS
 
         

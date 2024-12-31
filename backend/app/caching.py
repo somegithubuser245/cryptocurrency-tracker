@@ -19,5 +19,5 @@ class Cacher():
         return None
 
     def construct_key(self, reqest: PriceRequest) -> str:
-        return f"{reqest.chart_type}:{reqest.crypto_id}:{reqest.days}"
+        return f"{reqest.chart_type}:{reqest.crypto_id}:{reqest.interval}"
 

@@ -1,10 +1,10 @@
 import os
 import httpx
 
-from config import BINANCE_API_URL, BINANCE_SUPPORTED_COINS, logger
+from config import logger
+from binance_config import BINANCE_API_URL, SUPPORTED_PAIRS
 from models import PriceRequest
 from dotenv import load_dotenv
-from datetime import datetime
 
 class CryptoFetcher:
     def __init__(self):
@@ -16,8 +16,8 @@ class CryptoFetcher:
         url = f"{self.base_url}/klines"
 
         params = {
-            "symbol": BINANCE_SUPPORTED_COINS[request.crypto_id],
-            "interval": '1h',
+            "symbol": request.crypto_id,
+            "interval": request.interval,
         }
         
         try:
