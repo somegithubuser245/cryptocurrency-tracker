@@ -1,17 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, Time, ISeriesApi, CandlestickData } from 'lightweight-charts';
+import { createChart, IChartApi, Time, CandlestickData } from 'lightweight-charts';
 
 // Type definitions
-interface CryptoOption {
-  id: string;
-  name: string;
-}
-
-interface TimeRange {
-  value: string;
-  label: string;
-}
-
 interface OHLCData {
   timestamp: number;
   open: number;
@@ -20,33 +10,50 @@ interface OHLCData {
   close: number;
 }
 
-const CRYPTO_OPTIONS: CryptoOption[] = [
-  { id: 'bitcoin', name: 'Bitcoin' },
-  { id: 'ethereum', name: 'Ethereum' },
-  { id: 'solana', name: 'Solana' },
-  { id: 'dogecoin', name: 'Dogecoin' },
-  { id: 'cardano', name: 'Cardano' }
-];
-
-const TIME_RANGES: TimeRange[] = [
-  { value: '1', label: '24 Hours' },
-  { value: '7', label: '7 Days' },
-  { value: '30', label: '30 Days' },
-  { value: '90', label: '90 Days' }
-];
+interface ConfigData {
+  [key: string]: string;
+}
 
 const CryptoChart: React.FC = () => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
-  const [selectedCrypto, setSelectedCrypto] = useState<string>('bitcoin');
-  const [timeRange, setTimeRange] = useState<string>('7');
+  const [selectedPair, setSelectedPair] = useState<string>('BTCUSDT');
+  const [timeRange, setTimeRange] = useState<string>('4h');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [supportedPairs, setSupportedPairs] = useState<ConfigData>({});
+  const [timeRanges, setTimeRanges] = useState<ConfigData>({});
+
+  // Fetch configuration data
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const [pairsResponse, timeResponse] = await Promise.all([
+          fetch('http://localhost:8000/api/crypto/config/pairs'),
+          fetch('http://localhost:8000/api/crypto/config/timeranges')
+        ]);
+
+        if (!pairsResponse.ok || !timeResponse.ok) {
+          throw new Error('Failed to fetch configuration data');
+        }
+
+        const pairs = await pairsResponse.json();
+        const times = await timeResponse.json();
+
+        setSupportedPairs(pairs);
+        setTimeRanges(times);
+      } catch (err) {
+        console.error('Error fetching configuration:', err);
+        setError('Failed to load configuration. Please try again later.');
+      }
+    };
+
+    fetchConfigs();
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Create chart instance
     chart.current = createChart(chartContainerRef.current, {
       layout: {
         background: { color: '#222' },
@@ -63,43 +70,37 @@ const CryptoChart: React.FC = () => {
         horzLines: { color: '#444' },
       },
       crosshair: {
-        // Change mode from default 'magnet' to 'normal'.
-        // Allows the crosshair to move freely without snapping to datapoints
         mode: 0,
-
-        // Vertical crosshair line (showing Date in Label)
         vertLine: {
-            color: '#C3BCDB44',
-            labelBackgroundColor: '#9B7DFF',
+          color: '#C3BCDB44',
+          labelBackgroundColor: '#9B7DFF',
         },
-
-        // Horizontal crosshair line (showing Price in Label)
         horzLine: {
-            color: '#9B7DFF',
-            labelBackgroundColor: '#9B7DFF',
+          color: '#9B7DFF',
+          labelBackgroundColor: '#9B7DFF',
         },
-    },
+      },
     });
 
     chart.current.timeScale().applyOptions({
-        borderColor: '#71649C'
-    })
-
-    // Create candlestick series
-    const candlestickSeries = chart.current.addCandlestickSeries({
-        wickUpColor: 'rgb(54, 116, 217)',
-        upColor: 'rgb(54, 116, 217)',
-        wickDownColor: 'rgb(225, 50, 85)',
-        downColor: 'rgb(225, 50, 85)',
-        borderVisible: false,
+      borderColor: '#71649C'
     });
 
-    // Add data
+    const candlestickSeries = chart.current.addCandlestickSeries({
+      wickUpColor: 'rgb(54, 116, 217)',
+      upColor: 'rgb(54, 116, 217)',
+      wickDownColor: 'rgb(225, 50, 85)',
+      downColor: 'rgb(225, 50, 85)',
+      borderVisible: false,
+    });
+
     const fetchData = async (): Promise<void> => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:8000/api/crypto/${selectedCrypto}/ohlc?days=${timeRange}`);
+        const response = await fetch(
+          `http://localhost:8000/api/crypto/${selectedPair}/ohlc?interval=${timeRange}`
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -114,8 +115,6 @@ const CryptoChart: React.FC = () => {
         }));
 
         candlestickSeries.setData(formattedData);
-        
-        // Fit content
         chart.current?.timeScale().fitContent();
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -127,7 +126,6 @@ const CryptoChart: React.FC = () => {
 
     fetchData();
 
-    // Handle resize
     const handleResize = (): void => {
       if (chart.current && chartContainerRef.current) {
         chart.current.applyOptions({
@@ -138,17 +136,16 @@ const CryptoChart: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       if (chart.current) {
         chart.current.remove();
       }
     };
-  }, [selectedCrypto, timeRange]);
+  }, [selectedPair, timeRange]);
 
-  const handleCryptoChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    setSelectedCrypto(e.target.value);
+  const handlePairChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedPair(e.target.value);
   };
 
   const handleTimeRangeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -157,48 +154,50 @@ const CryptoChart: React.FC = () => {
 
   return (
     <div className="w-full bg-black rounded-xl p-3">
-            <div className="flex flex-row justify-end pb-2">
-            <div className="basis-1/2 justify-self-start self-center">
-                <h2 className='text-white text-left text-xl mx-3'>{selectedCrypto.toUpperCase()} OHLC Chart</h2>
-            </div>
-              <div className='flex flex-row basis-1/2 justify-end'>
-                <select
-                    value={timeRange}
-                    onChange={handleTimeRangeChange}
-                    className="m-2 p-2 rounded-xl border-2 border-trasparent"
-                >
-                    {TIME_RANGES.map(range => (
-                    <option key={range.value} value={range.value}>
-                        {range.label}
-                    </option>
-                    ))}
-                </select>
-                <select
-                    value={selectedCrypto}
-                    onChange={handleCryptoChange}
-                    className="m-2 p-2 rounded-xl border-2"
-                >
-                    {CRYPTO_OPTIONS.map(crypto => (
-                    <option key={crypto.id} value={crypto.id}>
-                        {crypto.name}
-                    </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-        <div className="relative">
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
-              <div className="text-gray-600">Loading...</div>
-            </div>
-          )}
-          {error && (
-            <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
-              <div className="text-red-500">{error}</div>
-            </div>
-          )}
-          <div ref={chartContainerRef} className="p-1" />
+      <div className="flex flex-row justify-end pb-2">
+        <div className="basis-1/2 justify-self-start self-center">
+          <h2 className='text-white text-left text-xl mx-3'>
+            {supportedPairs[selectedPair] || selectedPair} OHLC Chart
+          </h2>
         </div>
+        <div className='flex flex-row basis-1/2 justify-end'>
+          <select
+            value={timeRange}
+            onChange={handleTimeRangeChange}
+            className="m-2 p-2 rounded-xl border-2 border-transparent"
+          >
+            {Object.entries(timeRanges).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedPair}
+            onChange={handlePairChange}
+            className="m-2 p-2 rounded-xl border-2"
+          >
+            {Object.entries(supportedPairs).map(([pair, name]) => (
+              <option key={pair} value={pair}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
+            <div className="text-gray-600">Loading...</div>
+          </div>
+        )}
+        {error && (
+          <div className="absolute inset-0 bg-white/75 flex items-center justify-center z-10">
+            <div className="text-red-500">{error}</div>
+          </div>
+        )}
+        <div ref={chartContainerRef} className="p-1" />
+      </div>
     </div>
   );
 };
