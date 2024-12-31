@@ -1,4 +1,4 @@
-from gecko import CryptoFetcher
+from binance import CryptoFetcher
 from caching import Cacher
 from models import PriceRequest
 from datetime import datetime
@@ -21,7 +21,6 @@ class ApiCallManager:
         
         response = await self.data_fetcher.getResponse(request)
         raw_data = response.json()
-        logger.debug('Testing out logger')
 
         self.redis_cacher.set(raw_data, request) # cache the response
 
@@ -31,7 +30,7 @@ class ApiCallManager:
         if chart_type == "market_chart":
             return self.format_data_market_chart(data)
         
-        return self.format_data_ohlc(data)
+        return self.format_data_binance(data)
 
 
     # Helper functions for API caller to have better format
@@ -54,6 +53,18 @@ class ApiCallManager:
                 "low": low,
                 "close": close
             })
+
+    def format_data_binance(self, data):
+        formatted_data = []
+        for entry in data:
+            formatted_data.append({
+                "timestamp": entry[0],
+                "open": float(entry[1]),
+                "high": float(entry[2]),
+                "low": float(entry[3]),
+                "close": float(entry[4])
+            })
+
         
         return formatted_data
 

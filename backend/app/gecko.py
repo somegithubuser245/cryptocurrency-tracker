@@ -24,7 +24,7 @@ class CryptoFetcher:
         }
         
         return await self.client.get(
-                url, 
+                url,
                 headers = self.headers,
                 params =  params)
     
