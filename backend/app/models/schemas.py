@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 class PriceRequest(BaseModel):
     crypto_id: str

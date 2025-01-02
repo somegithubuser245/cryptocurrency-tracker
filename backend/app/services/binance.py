@@ -1,8 +1,8 @@
 import httpx
 
-from config import logger
-from binance_config import BINANCE_API_URL
-from models import PriceRequest
+from app.config.config import logger
+from app.config.binance_config import BINANCE_API_URL
+from app.models.schemas import PriceRequest
 
 class CryptoFetcher:
     def __init__(self):

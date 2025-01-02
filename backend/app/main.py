@@ -2,9 +2,8 @@ from typing import Annotated
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from api_call_manager import ApiCallManager
-from models import PriceRequest
-from binance_config import SUPPORTED_PAIRS
+from app.services.api_call_manager import ApiCallManager
+from app.models.schemas import PriceRequest
 
 # Setup
 app = FastAPI()
