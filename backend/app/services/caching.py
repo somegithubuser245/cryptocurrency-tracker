@@ -4,7 +4,7 @@ from app.models.schemas import PriceRequest
 
 class Cacher():
     def __init__(self):
-        self.redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        self.redis_client = redis.Redis('redis')
 
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)
