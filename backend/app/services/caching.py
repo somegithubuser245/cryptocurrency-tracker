@@ -1,6 +1,6 @@
 import redis
 import json
-from models import PriceRequest
+from app.models.schemas import PriceRequest
 
 class Cacher():
     def __init__(self):

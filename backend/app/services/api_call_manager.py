@@ -1,7 +1,7 @@
-from binance import CryptoFetcher
-from caching import Cacher
-from models import PriceRequest
-from binance_config import SUPPORTED_PAIRS, TIME_RANGES
+from .binance import CryptoFetcher
+from .caching import Cacher
+from app.models.schemas import PriceRequest
+from app.config.binance_config import SUPPORTED_PAIRS, TIME_RANGES
 
 class ApiCallManager:
     def __init__(self):
