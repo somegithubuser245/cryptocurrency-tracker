@@ -1,5 +1,3 @@
-BINANCE_API_URL = "https://data-api.binance.vision/api/v3" # market-data only API
-
 SUPPORTED_PAIRS = {
     'BTCUSDT': 'Bitcoin',
     'ETHUSDT': 'Ethereum',

@@ -1,10 +1,11 @@
 import redis
 import json
 from app.models.schemas import PriceRequest
+from app.config.config import settings
 
 class Cacher():
     def __init__(self):
-        self.redis_client = redis.Redis('redis')
+        self.redis_client = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
 
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)
