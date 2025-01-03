@@ -1,13 +1,13 @@
 import httpx
 
 from app.config.config import logger
-from app.config.config import settings
+from app.config.binance_config import binance_settings
 from app.models.schemas import PriceRequest
 
 class CryptoFetcher:
     def __init__(self):
         self.client = httpx.AsyncClient()
-        self.base_url = settings.BINANCE_API_URL
+        self.base_url = binance_settings.BINANCE_API_URL
             
     async def get_response(self, request: PriceRequest):
         url = f"{self.base_url}/klines"

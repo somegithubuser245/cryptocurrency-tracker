@@ -2,6 +2,7 @@ import redis
 import json
 from app.models.schemas import PriceRequest
 from app.config.config import settings
+from app.config.binance_config import binance_settings
 
 class Cacher():
     def __init__(self):
@@ -10,7 +11,8 @@ class Cacher():
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)
         json_data = json.dumps(data)
-        self.redis_client.set(key, json_data)
+        ttl = binance_settings.CACHE_TTL_CONFIG[request.interval]
+        self.redis_client.set(name=key, value=json_data, ex=ttl)
 
     def get(self, request: PriceRequest):
         key = self.construct_key(request)

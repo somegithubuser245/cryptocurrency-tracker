@@ -1,7 +1,7 @@
 from .binance import CryptoFetcher
 from .caching import Cacher
 from app.models.schemas import PriceRequest
-from app.config.binance_config import SUPPORTED_PAIRS, TIME_RANGES
+from app.config.binance_config import binance_settings
 
 class ApiCallManager:
     def __init__(self):
@@ -28,9 +28,9 @@ class ApiCallManager:
     
     def get_config_data(self, config_data: str):
         if config_data == 'timeranges':
-            return TIME_RANGES
+            return binance_settings.TIME_RANGES
         
-        return SUPPORTED_PAIRS
+        return binance_settings.SUPPORTED_PAIRS
 
     # Helper functions for API caller to have better format
     def format_data_ohlc(self, data):
