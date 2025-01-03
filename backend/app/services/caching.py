@@ -13,15 +13,14 @@ class Cacher():
 
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)
-        json_data = json.dumps(data)
         ttl = binance_settings.CACHE_TTL_CONFIG[request.interval]
-        self.redis_client.set(name=key, value=json_data, ex=ttl)
+        self.redis_client.set(name=key, value=data, ex=ttl)
 
     def get(self, request: PriceRequest):
         key = self.construct_key(request)
         response = self.redis_client.get(key)
 
-        if response: return json.loads(response)
+        if response: return response
         return None
 
     def construct_key(self, reqest: PriceRequest) -> str:

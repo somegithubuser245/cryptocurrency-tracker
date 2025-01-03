@@ -21,7 +21,7 @@ class CryptoFetcher:
         try:
             response = await self.client.get(url, params=params)
             response.raise_for_status()  # This will raise an exception for bad status codes
-            return response
+            return response.text
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
             raise

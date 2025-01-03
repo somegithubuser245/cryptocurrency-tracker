@@ -2,6 +2,7 @@ from .binance import CryptoFetcher
 from .caching import Cacher
 from app.models.schemas import PriceRequest
 from app.config.binance_config import binance_settings
+import json
 
 class ApiCallManager:
     def __init__(self):
@@ -10,14 +11,14 @@ class ApiCallManager:
     
     async def get_price_stats(self, request: PriceRequest):
         self._validate_request(request)
-        
+
         # look if request is already cached and return it if so
         raw_data = self.redis_cacher.get(request) 
         if raw_data is not None:
             return self.format_data(raw_data, request.chart_type)
         
         response = await self.data_fetcher.get_response(request)
-        raw_data = response.json()
+        raw_data = response
 
         self.redis_cacher.set(raw_data, request) # cache the response
 
@@ -40,10 +41,12 @@ class ApiCallManager:
 
     # Helper functions for API caller to have better format
     def format_data(self, data, chart_type : str):
+        json_data = json.loads(data) # convert to json for processing
+
         if chart_type == "market_chart":
-            return self.format_data_market_chart(data)
+            return self.format_data_market_chart(json_data)
         
-        return self.format_data_ohlc(data)
+        return self.format_data_ohlc(json_data)
     
     def format_data_ohlc(self, data):
         formatted_data = []

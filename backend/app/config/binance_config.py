@@ -10,7 +10,8 @@ class BinanceSettings(BaseSettings):
         "1h": 3600,
         "4h": 14400,
         "1d": 86400,
-        "1w": 604800
+        "1w": 604800,
+        "1M": 604800,
     }
 
     SUPPORTED_PAIRS: dict = {
