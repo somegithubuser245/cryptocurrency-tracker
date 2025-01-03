@@ -1,7 +1,9 @@
 from .binance import CryptoFetcher
 from .caching import Cacher
 from app.models.schemas import PriceRequest
-from app.config.binance_config import SUPPORTED_PAIRS, TIME_RANGES
+from app.config.binance_config import binance_settings
+import json
+import time
 
 class ApiCallManager:
     def __init__(self):
@@ -9,35 +11,49 @@ class ApiCallManager:
         self.redis_cacher = Cacher()
     
     async def get_price_stats(self, request: PriceRequest):
-        raw_data = self.redis_cacher.get(request) # look if request is already cached and return it if so
+        self._validate_request(request)
+
+        # look if request is already cached and return it if so
+        raw_data = self.redis_cacher.get(request) 
         if raw_data is not None:
             return self.format_data(raw_data, request.chart_type)
         
         response = await self.data_fetcher.get_response(request)
-        raw_data = response.json()
+        raw_data = response
 
         self.redis_cacher.set(raw_data, request) # cache the response
 
-        return self.format_data(raw_data, request.chart_type) # return to API caller in readable format
+        # return to API caller in readable format
+        return self.format_data(raw_data, request.chart_type) 
 
-    def format_data(self, data, chart_type : str):
-        if chart_type == "market_chart":
-            return self.format_data_market_chart(data)
-        
-        return self.format_data_ohlc(data)
-    
     def get_config_data(self, config_data: str):
         if config_data == 'timeranges':
-            return TIME_RANGES
+            return binance_settings.TIME_RANGES
         
-        return SUPPORTED_PAIRS
+        return binance_settings.SUPPORTED_PAIRS
+    
+    def _validate_request(self, request: PriceRequest) -> None:
+        if request.crypto_id not in binance_settings.SUPPORTED_PAIRS:
+            raise ValueError(f"Unsupported cryptocurrency pair: {request.crypto_id}")
+        if request.interval not in binance_settings.TIME_RANGES:
+            raise ValueError(f"Invalid interval: {request.interval}")
+        if request.chart_type not in ["ohlc", "market_chart"]:
+            raise ValueError(f"Invalid chart type: {request.chart_type}")
 
     # Helper functions for API caller to have better format
+    def format_data(self, data, chart_type : str):
+        json_data = json.loads(data) # convert to json for processing
+
+        if chart_type == "market_chart":
+            return self.format_data_market_chart(json_data)
+        
+        return self.format_data_ohlc(json_data)
+    
     def format_data_ohlc(self, data):
         formatted_data = []
         for entry in data:
             formatted_data.append({
-                "timestamp": entry[0],
+                "time": int(entry[0] / 1000), # Convert ms to s
                 "open": float(entry[1]),
                 "high": float(entry[2]),
                 "low": float(entry[3]),

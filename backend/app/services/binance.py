@@ -1,15 +1,16 @@
 import httpx
 
 from app.config.config import logger
-from app.config.binance_config import BINANCE_API_URL
+from app.config.binance_config import binance_settings
 from app.models.schemas import PriceRequest
 
 class CryptoFetcher:
     def __init__(self):
         self.client = httpx.AsyncClient()
-        self.base_url = BINANCE_API_URL
+        self.base_url = binance_settings.BINANCE_API_URL
             
     async def get_response(self, request: PriceRequest):
+        """Make a reqest to binance public API"""
         url = f"{self.base_url}/klines"
 
         params = {
@@ -20,7 +21,7 @@ class CryptoFetcher:
         try:
             response = await self.client.get(url, params=params)
             response.raise_for_status()  # This will raise an exception for bad status codes
-            return response
+            return response.text
         except httpx.HTTPStatusError as e:
             logger.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
             raise

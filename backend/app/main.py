@@ -26,14 +26,15 @@ async def get_pairs(
 @app.get("/api/crypto/{crypto_id}/{chart_type}")
 async def get_data(
     crypto_id: str,
-    interval: str = '4h',
     chart_type: str = "ohlc",
+    interval: str = '4h',
 ):
     try:
         request = PriceRequest(crypto_id=crypto_id, interval=interval, chart_type=chart_type)
         data = await api_call_manager.get_price_stats(request)
         return data
     except ValueError as e:
+        # Pydantic validation
         raise HTTPException(status_code=400, detail=str(e))
     
 

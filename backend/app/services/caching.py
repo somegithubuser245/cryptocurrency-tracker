@@ -1,21 +1,26 @@
 import redis
 import json
 from app.models.schemas import PriceRequest
+from app.config.config import settings
+from app.config.binance_config import binance_settings
 
 class Cacher():
     def __init__(self):
-        self.redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        self.redis_client = redis.Redis(
+            host=settings.REDIS_HOST, 
+            port=settings.REDIS_PORT, 
+            db=settings.REDIS_DB)
 
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)
-        json_data = json.dumps(data)
-        self.redis_client.set(key, json_data)
+        ttl = binance_settings.CACHE_TTL_CONFIG[request.interval]
+        self.redis_client.set(name=key, value=data, ex=ttl)
 
     def get(self, request: PriceRequest):
         key = self.construct_key(request)
         response = self.redis_client.get(key)
 
-        if response: return json.loads(response)
+        if response: return response
         return None
 
     def construct_key(self, reqest: PriceRequest) -> str:
