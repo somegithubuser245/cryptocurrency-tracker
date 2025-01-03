@@ -26,11 +26,14 @@ class ApiCallManager:
         # return to API caller in readable format
         return self.format_data(raw_data, request.chart_type) 
 
-    def get_config_data(self, config_data: str):
-        if config_data == 'timeranges':
-            return binance_settings.TIME_RANGES
-        
-        return binance_settings.SUPPORTED_PAIRS
+    def get_config_data(self, config_type: str):
+        match(config_type):
+            case "timeranges":
+                return binance_settings.TIME_RANGES
+            case "pairs":
+                return binance_settings.SUPPORTED_PAIRS
+            
+        raise ValueError(f'Unsupported config type: {config_type}')
     
     def _validate_request(self, request: PriceRequest) -> None:
         if request.crypto_id not in binance_settings.SUPPORTED_PAIRS:
@@ -43,10 +46,6 @@ class ApiCallManager:
     # Helper functions for API caller to have better format
     def format_data(self, data, chart_type : str):
         json_data = json.loads(data) # convert to json for processing
-
-        if chart_type == "market_chart":
-            return self.format_data_market_chart(json_data)
-        
         return self.format_data_ohlc(json_data)
     
     def format_data_ohlc(self, data):

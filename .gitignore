@@ -11,6 +11,9 @@ __pycache__/
 *.egg-info/
 *.egg
 
+#pytest related
+*.coverage
+
 # Environment variables
 .env
 .env.local
