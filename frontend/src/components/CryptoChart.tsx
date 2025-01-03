@@ -3,7 +3,7 @@ import { createChart, IChartApi, Time, CandlestickData } from 'lightweight-chart
 
 // Type definitions
 interface OHLCData {
-  timestamp: number;
+  time: Time;
   open: number;
   high: number;
   low: number;
@@ -95,34 +95,27 @@ const CryptoChart: React.FC = () => {
     });
 
     const fetchData = async (): Promise<void> => {
-      setIsLoading(true);
-      setError(null);
-      try {
+    setIsLoading(true);
+    setError(null);
+    try {
         const response = await fetch(
-          `http://localhost:8000/api/crypto/${selectedPair}/ohlc?interval=${timeRange}`
+            `http://localhost:8000/api/crypto/${selectedPair}/ohlc?interval=${timeRange}`
         );
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+            throw new Error('Failed to fetch data');
         }
         const data: OHLCData[] = await response.json();
         
-        const formattedData: CandlestickData<Time>[] = data.map(item => ({
-          time: (item.timestamp / 1000) as Time,
-          open: item.open,
-          high: item.high,
-          low: item.low,
-          close: item.close,
-        }));
-
-        candlestickSeries.setData(formattedData);
+        // No need for data transformation, use directly
+        candlestickSeries.setData(data);
         chart.current?.timeScale().fitContent();
-      } catch (err) {
+    } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load chart data. Please try again later.');
-      } finally {
+    } finally {
         setIsLoading(false);
-      }
-    };
+    }
+};
 
     fetchData();
 

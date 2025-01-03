@@ -3,6 +3,7 @@ from .caching import Cacher
 from app.models.schemas import PriceRequest
 from app.config.binance_config import binance_settings
 import json
+import time
 
 class ApiCallManager:
     def __init__(self):
@@ -52,7 +53,7 @@ class ApiCallManager:
         formatted_data = []
         for entry in data:
             formatted_data.append({
-                "timestamp": entry[0],
+                "time": int(entry[0] / 1000), # Convert ms to s
                 "open": float(entry[1]),
                 "high": float(entry[2]),
                 "low": float(entry[3]),
