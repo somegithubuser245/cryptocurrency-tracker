@@ -9,7 +9,10 @@ class ApiCallManager:
         self.redis_cacher = Cacher()
     
     async def get_price_stats(self, request: PriceRequest):
-        raw_data = self.redis_cacher.get(request) # look if request is already cached and return it if so
+        self._validate_request(request)
+        
+        # look if request is already cached and return it if so
+        raw_data = self.redis_cacher.get(request) 
         if raw_data is not None:
             return self.format_data(raw_data, request.chart_type)
         
@@ -18,21 +21,30 @@ class ApiCallManager:
 
         self.redis_cacher.set(raw_data, request) # cache the response
 
-        return self.format_data(raw_data, request.chart_type) # return to API caller in readable format
+        # return to API caller in readable format
+        return self.format_data(raw_data, request.chart_type) 
 
+    def get_config_data(self, config_data: str):
+        if config_data == 'timeranges':
+            return binance_settings.TIME_RANGES
+        
+        return binance_settings.SUPPORTED_PAIRS
+    
+    def _validate_request(self, request: PriceRequest) -> None:
+        if request.crypto_id not in binance_settings.SUPPORTED_PAIRS:
+            raise ValueError(f"Unsupported cryptocurrency pair: {request.crypto_id}")
+        if request.interval not in binance_settings.TIME_RANGES:
+            raise ValueError(f"Invalid interval: {request.interval}")
+        if request.chart_type not in ["ohlc", "market_chart"]:
+            raise ValueError(f"Invalid chart type: {request.chart_type}")
+
+    # Helper functions for API caller to have better format
     def format_data(self, data, chart_type : str):
         if chart_type == "market_chart":
             return self.format_data_market_chart(data)
         
         return self.format_data_ohlc(data)
     
-    def get_config_data(self, config_data: str):
-        if config_data == 'timeranges':
-            return binance_settings.TIME_RANGES
-        
-        return binance_settings.SUPPORTED_PAIRS
-
-    # Helper functions for API caller to have better format
     def format_data_ohlc(self, data):
         formatted_data = []
         for entry in data:

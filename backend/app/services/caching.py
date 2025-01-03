@@ -6,7 +6,10 @@ from app.config.binance_config import binance_settings
 
 class Cacher():
     def __init__(self):
-        self.redis_client = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
+        self.redis_client = redis.Redis(
+            host=settings.REDIS_HOST, 
+            port=settings.REDIS_PORT, 
+            db=settings.REDIS_DB)
 
     def set(self, data, request: PriceRequest):
         key = self.construct_key(request)

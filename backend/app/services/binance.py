@@ -10,6 +10,7 @@ class CryptoFetcher:
         self.base_url = binance_settings.BINANCE_API_URL
             
     async def get_response(self, request: PriceRequest):
+        """Make a reqest to binance public API"""
         url = f"{self.base_url}/klines"
 
         params = {
