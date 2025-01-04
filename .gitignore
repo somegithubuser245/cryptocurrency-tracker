@@ -11,6 +11,10 @@ __pycache__/
 *.egg-info/
 *.egg
 
+#pytest related
+*.coverage
+*.pytest_cache
+
 # Environment variables
 .env
 .env.local
@@ -24,7 +28,3 @@ __pycache__/
 # OS specific files
 .DS_Store
 Thumbs.db
-
-# Frontend
-
-/frontend/node_modules

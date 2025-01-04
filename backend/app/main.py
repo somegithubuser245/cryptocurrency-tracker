@@ -1,6 +1,6 @@
-from typing import Annotated
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.services.api_call_manager import ApiCallManager
 from app.models.schemas import PriceRequest
@@ -17,10 +17,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(ValueError)
+async def validation_exception_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)}
+    )
+
 @app.get("/api/crypto/config/{config_data}")
-async def get_pairs(
-    config_data: str
-):
+async def get_pairs(config_data: str):
     return api_call_manager.get_config_data(config_data)
 
 @app.get("/api/crypto/{crypto_id}/{chart_type}")
@@ -29,12 +34,8 @@ async def get_data(
     chart_type: str = "ohlc",
     interval: str = '4h',
 ):
-    try:
-        request = PriceRequest(crypto_id=crypto_id, interval=interval, chart_type=chart_type)
-        data = await api_call_manager.get_price_stats(request)
-        return data
-    except ValueError as e:
-        # Pydantic validation
-        raise HTTPException(status_code=400, detail=str(e))
+    request = PriceRequest(crypto_id=crypto_id, interval=interval, chart_type=chart_type)
+    data = await api_call_manager.get_price_stats(request)
+    return data
     
 

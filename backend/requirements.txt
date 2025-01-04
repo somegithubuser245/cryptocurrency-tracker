@@ -4,3 +4,4 @@ httpx
 redis
 pydantic
 pydantic-settings
+pytest
