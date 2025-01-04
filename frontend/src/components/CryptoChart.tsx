@@ -99,7 +99,7 @@ const CryptoChart: React.FC = () => {
     setError(null);
     try {
         const response = await fetch(
-            `http://localhost:8000/api/crypto/${selectedPair}/ohlc?interval=${timeRange}`
+            `http://localhost:8000/api/crypto/${selectedPair}/klines?interval=${timeRange}`
         );
         if (!response.ok) {
             throw new Error('Failed to fetch data');

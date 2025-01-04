@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -28,13 +28,13 @@ async def validation_exception_handler(request: Request, exc: ValueError):
 async def get_pairs(config_data: str):
     return api_call_manager.get_config_data(config_data)
 
-@app.get("/api/crypto/{crypto_id}/{chart_type}")
+@app.get("/api/crypto/{crypto_id}/{data_type}")
 async def get_data(
     crypto_id: str,
-    chart_type: str = "ohlc",
+    data_type: str = "ohlc",
     interval: str = '4h',
 ):
-    request = PriceRequest(crypto_id=crypto_id, interval=interval, chart_type=chart_type)
+    request = PriceRequest(crypto_id=crypto_id, interval=interval, data_type=data_type)
     data = await api_call_manager.get_price_stats(request)
     return data
     
