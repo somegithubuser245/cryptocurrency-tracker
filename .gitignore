@@ -13,6 +13,7 @@ __pycache__/
 
 #pytest related
 *.coverage
+*.pytest_cache
 
 # Environment variables
 .env
@@ -27,7 +28,3 @@ __pycache__/
 # OS specific files
 .DS_Store
 Thumbs.db
-
-# Frontend
-
-/frontend/node_modules

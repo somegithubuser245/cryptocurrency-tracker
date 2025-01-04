@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, Time, CandlestickData } from 'lightweight-charts';
+import { createChart, IChartApi, Time, } from 'lightweight-charts';
 
 // Type definitions
 interface OHLCData {

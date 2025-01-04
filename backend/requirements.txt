@@ -5,4 +5,3 @@ redis
 pydantic
 pydantic-settings
 pytest
-pytest-cov
