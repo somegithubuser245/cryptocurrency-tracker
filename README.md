@@ -46,7 +46,7 @@ A real-time cryptocurrency price visualization platform that displays OHLC (Open
 ### Docker Setup
 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/somegithubuser245/cryptocurrency-tracker.git
 cd cryptocurrency-tracker
 ```
 
@@ -57,7 +57,7 @@ docker-compose up
 
 The application will be available at http://localhost:5173
 
-You should see logs from both frontend and backend containers at startup.
+You should see logs from frontend, backend and redis containers at startup.
 
 ### Local Development Setup
 
@@ -65,7 +65,7 @@ You should see logs from both frontend and backend containers at startup.
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0
+uvicorn app.main:app --reload
 ```
 
 #### Frontend
@@ -129,6 +129,7 @@ Full API documentation is available at http://localhost:8000/docs when the backe
 ```
 ├── backend/
 │   ├── app/
+│   │   ├── main.py              # FastAPI application entry point
 │   │   ├── config/
 │   │   │   ├── binance_config.py
 │   │   │   └── config.py
