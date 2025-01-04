@@ -1,9 +1,13 @@
 from pydantic_settings import BaseSettings
 
+# use this link for reference. it's binance api docs for market data
+# https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints
+
 class BinanceSettings(BaseSettings):
     # market-data only api endpoint
     BINANCE_API_URL: str = "https://data-api.binance.vision/api/v3"
 
+    # used for redis ttl
     CACHE_TTL_CONFIG: dict = {
         "5m": 300,
         "30m": 1800,
@@ -14,6 +18,7 @@ class BinanceSettings(BaseSettings):
         "1M": 604800,
     }
 
+    # used for frontend
     SUPPORTED_PAIRS: dict = {
         'BTCUSDT': 'Bitcoin',
         'ETHUSDT': 'Ethereum',
@@ -23,6 +28,7 @@ class BinanceSettings(BaseSettings):
         'DOTUSDT': 'Polkadot'
     }
 
+    # used for frontend
     TIME_RANGES: dict = {
         "5m": "5 minutes",
         "30m": "30 minutes",
@@ -32,5 +38,9 @@ class BinanceSettings(BaseSettings):
         "1w": "Weekly",
         "1M": "Monthly"
     }
+
+    DATA_TYPES: list = [
+        'klines'
+    ]
 
 binance_settings = BinanceSettings()
