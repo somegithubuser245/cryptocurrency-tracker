@@ -31,7 +31,7 @@ async def get_pairs(config_data: str):
 @app.get("/api/crypto/{crypto_id}/{data_type}")
 async def get_data(
     crypto_id: str,
-    data_type: str = "ohlc",
+    data_type: str = "klines",
     interval: str = '4h',
 ):
     request = PriceRequest(crypto_id=crypto_id, interval=interval, data_type=data_type)
