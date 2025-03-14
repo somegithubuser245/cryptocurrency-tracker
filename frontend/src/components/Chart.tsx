@@ -16,16 +16,24 @@ interface Props {
 
 function Chart({ data, textColor, background }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const container = containerRef.current;
 
   useEffect(() => {
-      
       const chartOptions: DeepPartial<ChartOptions> = {
           layout: {
               textColor: textColor ?? "white",
               background: background ?? { type: ColorType.Solid, color: "black" },
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: 16,
+              
             },
-            width: containerRef.current?.getBoundingClientRect().width ?? 600,
-            height: 300,
+            grid: {
+                vertLines: {color: '#444'},
+                horzLines: {color: '#444'}
+            },
+            width: container?.getBoundingClientRect().width,
+            height: window.innerHeight / 3,
+
         };
         
         const chart = createChart(containerRef.current!, chartOptions);
@@ -49,7 +57,7 @@ function Chart({ data, textColor, background }: Props) {
     };
   }, [data]);
 
-  return <div ref={containerRef}></div>;
+  return <div ref={containerRef} className="crypto_chart"></div>;
 }
 
 export default Chart;

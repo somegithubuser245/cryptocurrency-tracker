@@ -1,28 +1,46 @@
 import { useEffect, useState } from "react";
-import Chart from "./components/Chart";
+import ChartCard from "./components/ChartCard";
 
 function App() {
   const [cryptoData, setCryptoData] = useState([]);
-
+  const [configData, setConfigData] = useState(Array<{id: string, name: string}>);
+  const [timeRangesData, setTimeRanges] = useState(Array<{id: string, name: string}>) 
   useEffect(() => {
     let ignore = false;
 
     async function fetchCryptoData() {
-      const response = await fetch('http://127.0.0.1:8000/api/crypto/BTCUSDT/klines')
-      const data = await response.json()
+      let response = await fetch('http://127.0.0.1:8000/api/crypto/config/pairs')
+      let data = await response.json()
+      let processedPairsData : Array<{id: string, name: string}> = []
+      Object.entries(data).forEach((entry) => {
+        processedPairsData.push({id: entry[0], name: entry[1] as string})
+      })
+
+      response = await fetch('http://127.0.0.1:8000/api/crypto/config/timeranges')
+      data = await response.json()
+      let processedRangesData : Array<{id: string, name: string}> = []
+      Object.entries(data).forEach((entry) => {
+        processedRangesData.push({id: entry[0], name: entry[1] as string})
+      })
+
+      response = await fetch('http://127.0.0.1:8000/api/crypto/BTCUSDT/klines')
+      data = await response.json()
+
       if (!ignore) {
+        setConfigData(processedPairsData)
+        setTimeRanges(processedRangesData)
         setCryptoData(data)
       }
     }
 
-    fetchCryptoData()
+    fetchCryptoData();
 
     return () => {
       ignore = true;
     }
   }, [])
 
-  return <Chart data={cryptoData} ></Chart>;
+  return configData.length > 0 && <ChartCard data={cryptoData} cryptoPairs={configData} timeRanges={timeRangesData}/>;
 }
 
 export default App;
