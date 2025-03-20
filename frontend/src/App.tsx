@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import ChartCard from "./components/ChartCard";
 
 function App() {
-  const [cryptoData, setCryptoData] = useState([]);
   const [configData, setConfigData] = useState(Array<{id: string, name: string}>);
   const [timeRangesData, setTimeRanges] = useState(Array<{id: string, name: string}>) 
   useEffect(() => {
@@ -23,13 +22,9 @@ function App() {
         processedRangesData.push({id: entry[0], name: entry[1] as string})
       })
 
-      response = await fetch('http://127.0.0.1:8000/api/crypto/BTCUSDT/klines')
-      data = await response.json()
-
       if (!ignore) {
         setConfigData(processedPairsData)
         setTimeRanges(processedRangesData)
-        setCryptoData(data)
       }
     }
 
@@ -40,7 +35,7 @@ function App() {
     }
   }, [])
 
-  return configData.length > 0 && <ChartCard data={cryptoData} cryptoPairs={configData} timeRanges={timeRangesData}/>;
+  return configData.length > 0 && <ChartCard cryptoPairs={configData} timeRanges={timeRangesData}/>;
 }
 
 export default App;

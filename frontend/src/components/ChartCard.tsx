@@ -1,15 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Chart from "./Chart";
 
 interface Props {
-  data: any;
   cryptoPairs: Array<{ id: string; name: string }>;
   timeRanges: Array<{ id: string; name: string }>;
 }
 
-function ChartCard({ data, cryptoPairs, timeRanges }: Props) {
+function ChartCard({cryptoPairs, timeRanges }: Props) {
   const [cryptoIndex, setCryptoIndex] = useState(0);
   const [timeRangeIndex, setTimeRangeIndex] = useState(0);
+  const [chartData, setChartData] = useState([]);
+
+  const baseURL = 'http://127.0.0.1:8000/api/crypto/'
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function fetchChartData() {
+      let response = await fetch(baseURL + cryptoPairs[cryptoIndex].id + "/klines" + `?interval=${timeRanges[timeRangeIndex].id}`);
+      const data = await response.json();
+      setChartData(data);
+    }
+
+    fetchChartData();
+
+    return () => {
+      ignore = true;
+    }
+
+  }, [cryptoIndex, timeRangeIndex]);
 
   return (
     <>
@@ -43,7 +62,7 @@ function ChartCard({ data, cryptoPairs, timeRanges }: Props) {
             </select>
           </div>
         </div>
-        <Chart data={data}></Chart>
+        <Chart data={chartData}></Chart>
       </div>
     </>
   );
