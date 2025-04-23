@@ -1,6 +1,6 @@
 from .binance import CryptoFetcher
 from .caching import Cacher
-from app.models.schemas import PriceRequest
+from app.models.schemas import PriceRequest, OHLCData
 from app.config.binance_config import binance_settings
 import json
 
@@ -57,18 +57,8 @@ class ApiCallManager:
             case 'klines':
                 return self.format_data_ohlc(json_data)
     
-    def format_data_ohlc(self, data):
+    def format_data_ohlc(self, data) -> dict:
         """Format for tradingview lightweight charts"""
-        formatted_data = []
-        for entry in data:
-            formatted_data.append({
-                "close": float(entry[4]),
-                "high": float(entry[2]),
-                "low": float(entry[3]),
-                "open": float(entry[1]),
-                "time": int(entry[0] / 1000) # Convert ms to s
-            })
-
-        
-        return formatted_data
+        return [OHLCData.from_binance(price_entry)
+            for price_entry in data]
         
