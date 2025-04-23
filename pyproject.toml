@@ -1,0 +1,25 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+respect-gitignore = true
+src = ["backend", "src", "app"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle (basic style errors)
+  "F",    # pyflakes (undefined names, etc)
+  "W",    # warnings
+  "I",    # isort (import sorting)
+  "N",    # pep8-naming
+  "ANN",  # flake8-annotations (type hints)
+  "B",    # bugbear (common Python pitfalls)
+  "C4",   # flake8-comprehensions (better list/dict comps)
+  "T20",  # flake8-print (catches `print()` in prod code)
+  "RET",  # flake8-return (return type best practices)
+  "SIM",  # flake8-simplify (code simplifications)
+]
+ignore = [
+  "ANN101", # Don't require type hint for self
+  "ANN102", # Don't require type hint for cls
+]
+exclude = ["venv", ".venv", "migrations", "__pycache__"]
