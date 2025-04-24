@@ -1,10 +1,13 @@
 import json
+import logging
 
 from app.config.binance_config import binance_settings
 from app.models.schemas import OHLCData, PriceRequest
 
 from .binance import CryptoFetcher
 from .caching import Cacher
+
+from app.config.config import logger
 
 
 class ApiCallManager:
@@ -18,19 +21,18 @@ class ApiCallManager:
         self._validate_request(request)
 
         # look if request is already cached and return it if so
-        # raw_data = self.redis_cacher.get(request)
-        # if raw_data is not None:
-        #     return self.format_data(raw_data, request.data_type)
+        raw_data = self.redis_cacher.get(request)
+        if raw_data: return self._format_data(raw_data, request.data_type)
 
         # if not, make request to binance api
-        response = await self.data_fetcher.get_response(request)
+        raw_data = await self.data_fetcher.get_response(request)
 
         # cache response
-        # ttl = binance_settings.CACHE_TTL_CONFIG[request.interval]
-        # self.redis_cacher.set(raw_data, request, ttl)
+        ttl = binance_settings.CACHE_TTL_CONFIG[request.interval]
+        self.redis_cacher.set(raw_data, request, ttl)
 
         # return to API caller in readable format
-        return self._format_data(response, request.data_type)
+        return self._format_data(raw_data, request.data_type)
 
     def get_config_data(self, config_type: str) -> dict:
         match config_type:

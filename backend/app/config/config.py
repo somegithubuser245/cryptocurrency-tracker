@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     If not, pydantic defaults
     to values defined here"""
 
-    REDIS_HOST: str = "localhost"
+    REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
 
