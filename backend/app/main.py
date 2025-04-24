@@ -2,8 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.models.schemas import PriceRequest
+from app.models.schemas import KlinesRequest
 from app.services.api_call_manager import ApiCallManager
+
+from app.config.config import ApiProvider
 
 # Setup
 app = FastAPI()
@@ -28,13 +30,13 @@ async def validation_exception_handler(request: Request, exc: ValueError) -> JSO
 async def get_pairs(config_data: str) -> dict:
     return api_call_manager.get_config_data(config_data)
 
-@app.get("/api/crypto/{crypto_id}/{data_type}")
+@app.get("/api/crypto/klines/{crypto_id}")
 async def get_data(
     crypto_id: str,
-    data_type: str = "klines",
+    api_provider: ApiProvider,
     interval: str = '4h',
 ) -> list[dict]:
-    request = PriceRequest(crypto_id=crypto_id, interval=interval, data_type=data_type)
+    request = KlinesRequest(crypto_id=crypto_id, interval=interval, api_provider=api_provider)
     return await api_call_manager.get_price_stats(request)
 
 

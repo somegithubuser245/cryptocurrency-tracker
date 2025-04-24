@@ -1,7 +1,7 @@
 import redis
 
 from app.config.config import logger, settings
-from app.models.schemas import PriceRequest
+from app.models.schemas import KlinesRequest
 
 
 class Cacher():
@@ -11,12 +11,12 @@ class Cacher():
             port=settings.REDIS_PORT,
             db=settings.REDIS_DB)
 
-    def set(self, data: str, request: PriceRequest, ttl: int) -> None:
+    def set(self, data: str, request: KlinesRequest, ttl: int) -> None:
         key = self.construct_key(request)
         logger.info(f"Caching data for key: {key} with TTL: {ttl / 60} minutes")
         self.redis_client.set(name=key, value=data, ex=ttl)
 
-    def get(self, request: PriceRequest) -> str:
+    def get(self, request: KlinesRequest) -> str:
         key = self.construct_key(request)
         response = self.redis_client.get(key)
 
@@ -25,6 +25,6 @@ class Cacher():
             return response
         return None
 
-    def construct_key(self, reqest: PriceRequest) -> str:
-        return f"{reqest.data_type}:{reqest.crypto_id}:{reqest.interval}"
+    def construct_key(self, reqest: KlinesRequest) -> str:
+        return f"{reqest.api_provider}:{reqest.crypto_id}:{reqest.interval}"
 
