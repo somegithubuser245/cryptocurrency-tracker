@@ -19,37 +19,44 @@ function Chart({ data, textColor, background }: Props) {
   const container = containerRef.current;
 
   useEffect(() => {
-      const chartOptions: DeepPartial<ChartOptions> = {
-          layout: {
-              textColor: textColor ?? "white",
-              background: background ?? { type: ColorType.Solid, color: "black" },
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: 16,
-              
-            },
-            grid: {
-                vertLines: {color: '#444'},
-                horzLines: {color: '#444'}
-            },
-            width: container?.getBoundingClientRect().width,
-            height: window.innerHeight / 3,
+    const shitPriceFormatter = (p: number) => p.toFixed(4);
+    const chartOptions: DeepPartial<ChartOptions> = {
+      layout: {
+        textColor: textColor ?? "white",
+        background: background ?? { type: ColorType.Solid, color: "black" },
+        fontFamily: "'Roboto', sans-serif",
+        fontSize: 16,
+      },
+      grid: {
+        vertLines: { color: "#444" },
+        horzLines: { color: "#444" },
+      },
+      timeScale: {
+        secondsVisible: true,
+        timeVisible: true,
+      },
+      localization: {
+        priceFormatter: shitPriceFormatter,
+      },
 
-        };
-        
-        const chart = createChart(containerRef.current!, chartOptions);
-        
-        const candleStickSeries = chart.addSeries(CandlestickSeries);
-        candleStickSeries.setData(data);
-        
-        const handleResize = () => {
-            const container = containerRef.current
-            if(container) {
-                chart.applyOptions({ width: container.getBoundingClientRect().width });
-            }
-        };
+      width: container?.getBoundingClientRect().width,
+      height: window.innerHeight / 3,
+    };
 
-        chart.timeScale().fitContent();
-        window.addEventListener("resize", handleResize);
+    const chart = createChart(containerRef.current!, chartOptions);
+
+    const candleStickSeries = chart.addSeries(CandlestickSeries);
+    candleStickSeries.setData(data);
+
+    const handleResize = () => {
+      const container = containerRef.current;
+      if (container) {
+        chart.applyOptions({ width: container.getBoundingClientRect().width });
+      }
+    };
+    chart.timeScale();
+    chart.timeScale().fitContent();
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);

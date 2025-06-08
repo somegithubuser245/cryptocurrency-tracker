@@ -5,7 +5,7 @@ redis
 pydantic
 pydantic-settings
 pytest
-python-okx
 python-dotenv
 websockets
 pandas
+ccxt

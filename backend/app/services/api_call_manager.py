@@ -22,7 +22,7 @@ class ApiCallManager:
         raw_data = self.redis_cacher.get(request)
         if raw_data: return self._format_data(raw_data, request)
 
-        # if not, make request to binance api
+        # if not, make request to external api
         raw_data = await self.data_fetcher.get_response(request)
         # cache response
         ttl = config.CACHE_TTL_CONFIG[request.interval]
@@ -31,15 +31,6 @@ class ApiCallManager:
         # return to API caller in readable format
         return self._format_data(raw_data, request)
 
-    def get_config_data(self, config_type: str) -> dict:
-        match config_type:
-            case "timeranges":
-                return config.TIME_RANGES
-            case "pairs":
-                return config.SUPPORTED_PAIRS
-
-        raise ValueError(f"Unsupported config type: {config_type}")
-
     # Helper functions for API caller to have better format
     def _format_data(self, data: str, request: KlinesRequest) -> dict:
         # slalable for other data types. current implementation only has
@@ -47,7 +38,5 @@ class ApiCallManager:
         # add another format method
         json_data = json.loads(data)
 
-        if request.api_provider == 'okx':
-            json_data.sort(key=lambda x: float(x[0]))
-        return [OHLCData.from_external_api(request.api_provider, price_entry) 
+        return [OHLCData.from_external_api(price_entry) 
                 for price_entry in json_data]

@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.models.schemas import KlinesRequest
 from app.services.api_call_manager import ApiCallManager
 
+from app.routes.static_data import static_api
 from app.config.config import ApiProvider
 
 # Setup
@@ -19,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(static_api)
+
 @app.exception_handler(ValueError)
 async def validation_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
     return JSONResponse(
@@ -26,11 +29,7 @@ async def validation_exception_handler(request: Request, exc: ValueError) -> JSO
         content={"detail": str(exc)}
     )
 
-@app.get("/api/crypto/config/{config_data}")
-async def get_pairs(config_data: str) -> dict:
-    return api_call_manager.get_config_data(config_data)
-
-@app.get("/api/crypto/klines/{crypto_id}")
+@app.get("/crypto/klines/{crypto_id}")
 async def get_data(
     crypto_id: str,
     api_provider: ApiProvider,

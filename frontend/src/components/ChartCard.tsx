@@ -12,7 +12,7 @@ function ChartCard({ cryptoPairs, timeRanges, api_provider }: Props) {
   const [timeRangeIndex, setTimeRangeIndex] = useState(0);
   const [chartData, setChartData] = useState([]);
 
-  const baseURL = "http://127.0.0.1:8000/api/crypto/klines/";
+  const baseURL = "http://127.0.0.1:8000/crypto/klines/";
 
   useEffect(() => {
     let ignore = false;
@@ -39,7 +39,9 @@ function ChartCard({ cryptoPairs, timeRanges, api_provider }: Props) {
     <>
       <div className="chart-card">
         <div className="chart-card-top-bar">
-          <h2>{cryptoPairs[cryptoIndex].name}</h2>
+          <h2>
+            {api_provider.toUpperCase()} - {cryptoPairs[cryptoIndex].name}
+          </h2>
           <div className="card-dropdown">
             <select name="Crypto">
               {cryptoPairs.map((cryptoPair, index) => (
