@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class Equalizer:
@@ -25,8 +25,8 @@ class Equalizer:
         sorted1, sorted2 = klines_df1.align(klines_df2, join="inner", axis=0)
 
         # Convert to list of dictionaries with timestamp included
-        result1 = sorted1.reset_index().to_dict("records")
-        result2 = sorted2.reset_index().to_dict("records")
+        result1 = sorted1.reset_index().assign(time=lambda x: x["time"] / 1000).to_dict("records")
+        result2 = sorted2.reset_index().assign(time=lambda x: x["time"] / 1000).to_dict("records")
 
         return (result1, result2)
 

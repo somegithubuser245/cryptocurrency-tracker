@@ -1,6 +1,7 @@
 import logging
+from enum import Enum
+
 from pydantic_settings import BaseSettings
-from enum import Enum, auto
 
 # most straightforward way to show logs in uvicorn
 logger = logging.getLogger("uvicorn.error")

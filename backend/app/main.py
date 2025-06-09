@@ -1,16 +1,10 @@
-import json
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import Annotated
 
 from app.models.schemas import CompareRequest, KlinesRequest
-from app.services.api_call_manager import ApiCallManager
-
 from app.routes.static_data import static_api
-from app.config.config import Exchange
-from app.services.timeframes_equalizer import Equalizer
-from app.services.external_api_caller import CryptoFetcher
+from app.services.api_call_manager import ApiCallManager
 
 # Setup
 app = FastAPI()
@@ -40,6 +34,6 @@ async def get_data(request: KlinesRequest) -> list[dict]:
 
 @app.get("/compare")
 async def get_klines_data(
-    request: CompareRequest = Query(),
+    request: CompareRequest = Query(),  # noqa: B008
 ) -> dict[str, list[dict[str, float | int]]]:
     return api_call_manager.get_timeframe_aligned(request)
