@@ -6,8 +6,25 @@ services:
     volumes:
       - ./backend:/backend
       - /backend/__pycache__
+      - /backend/.pytest_cache
+      - /backend/app/__pycache__
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
     depends_on:
       - redis
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /backend
+          ignore:
+            - __pycache__
+            - "*.pyc"
+            - .pytest_cache
+        - action: rebuild
+          path: ./backend/requirements.txt
+
   frontend:
     build: ./frontend
     ports:
@@ -15,6 +32,18 @@ services:
     volumes:
       - ./frontend:/frontend
       - /frontend/node_modules
+      - /frontend/dist
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /frontend/src
+        - action: sync
+          path: ./frontend/public
+          target: /frontend/public
+        - action: rebuild
+          path: ./frontend/package.json
+
   redis:
     image: "redis:alpine"
     ports:

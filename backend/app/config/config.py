@@ -5,6 +5,7 @@ from enum import Enum, auto
 # most straightforward way to show logs in uvicorn
 logger = logging.getLogger("uvicorn.error")
 
+
 class Settings(BaseSettings):
     """This is a pydantic settings class
     You can define your own .env
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
+
 
 settings = Settings()
 
@@ -28,10 +30,14 @@ CACHE_TTL_CONFIG: dict = {
     "1M": 604800,
 }
 
-class ApiProvider(str, Enum):
+
+class Exchange(str, Enum):
     BINANCE = "binance"
     OKX = "okx"
     BYBIT = "bybit"
+
+
+SUPPORTED_EXCHANGES: dict = {entry: entry.value for entry in Exchange}
 
 # used for frontend
 TIME_RANGES: dict = {
@@ -41,15 +47,14 @@ TIME_RANGES: dict = {
     "4h": "4 Hours",
     "1d": "Daily",
     "1w": "Weekly",
-    "1M": "Monthly"
+    "1M": "Monthly",
 }
 
 SUPPORTED_PAIRS: dict = {
-    'BTC-USDT': 'Bitcoin',
-    'ETH-USDT': 'Ethereum',
-    'SOL-USDT': 'Solana',
-    'ADA-USDT': 'Cardano',
-    'AVAX-USDT': 'Avalanche',
-    'DOT-USDT': 'Polkadot'
+    "BTC-USDT": "Bitcoin",
+    "ETH-USDT": "Ethereum",
+    "SOL-USDT": "Solana",
+    "ADA-USDT": "Cardano",
+    "AVAX-USDT": "Avalanche",
+    "DOT-USDT": "Polkadot",
 }
-

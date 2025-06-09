@@ -16,10 +16,13 @@ interface Props {
 
 function Chart({ data, textColor, background }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const container = containerRef.current;
 
   useEffect(() => {
+    if (!containerRef.current || !data) return;
+
+    const container = containerRef.current;
     const shitPriceFormatter = (p: number) => p.toFixed(4);
+
     const chartOptions: DeepPartial<ChartOptions> = {
       layout: {
         textColor: textColor ?? "white",
@@ -38,23 +41,20 @@ function Chart({ data, textColor, background }: Props) {
       localization: {
         priceFormatter: shitPriceFormatter,
       },
-
-      width: container?.getBoundingClientRect().width,
+      width: container.getBoundingClientRect().width,
       height: window.innerHeight / 3,
     };
 
-    const chart = createChart(containerRef.current!, chartOptions);
-
+    const chart = createChart(container, chartOptions);
     const candleStickSeries = chart.addSeries(CandlestickSeries);
     candleStickSeries.setData(data);
 
     const handleResize = () => {
-      const container = containerRef.current;
       if (container) {
         chart.applyOptions({ width: container.getBoundingClientRect().width });
       }
     };
-    chart.timeScale();
+
     chart.timeScale().fitContent();
     window.addEventListener("resize", handleResize);
 
@@ -62,7 +62,7 @@ function Chart({ data, textColor, background }: Props) {
       window.removeEventListener("resize", handleResize);
       chart.remove();
     };
-  }, [data]);
+  }, [data, textColor, background]);
 
   return <div ref={containerRef} className="crypto_chart"></div>;
 }
