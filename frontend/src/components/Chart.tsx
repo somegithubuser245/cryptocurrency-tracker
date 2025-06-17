@@ -8,6 +8,7 @@ import {
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 import type { KlineData } from "../types";
+import { createSmartPriceFormatter } from "../utils/priceFormatter";
 
 interface ChartProps {
   data: KlineData[];
@@ -17,12 +18,19 @@ interface ChartProps {
 
 function Chart({ data, textColor, background }: ChartProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     if (!containerRef.current || !data) return;
 
     const container = containerRef.current;
-    const shitPriceFormatter = (p: number) => p.toFixed(4);
+
+    // Extract all price values for smart formatting
+    const allPrices = data.flatMap((candle) => [
+      candle.open,
+      candle.high,
+      candle.low,
+      candle.close,
+    ]);
+    const smartPriceFormatter = createSmartPriceFormatter(allPrices);
 
     const chartOptions: DeepPartial<ChartOptions> = {
       layout: {
@@ -40,7 +48,7 @@ function Chart({ data, textColor, background }: ChartProps) {
         timeVisible: true,
       },
       localization: {
-        priceFormatter: shitPriceFormatter,
+        priceFormatter: smartPriceFormatter,
       },
       width: container.getBoundingClientRect().width,
       height: window.innerHeight / 3,

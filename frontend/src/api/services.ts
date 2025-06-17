@@ -1,6 +1,6 @@
 import { apiClient } from './client';
-import { buildConfigUrl, buildCompareUrl } from './config';
-import type { ConfigResponse, ChartDataResponse, CompareParams } from '../types';
+import { buildConfigUrl, buildOhlcCompareUrl, buildLineCompareUrl } from './config';
+import type { ConfigResponse, ChartDataResponse, BackendLineDataResponse, CompareParams } from '../types';
 
 export const configApi = {
   async getExchanges(): Promise<ConfigResponse> {
@@ -18,7 +18,11 @@ export const configApi = {
 
 export const chartApi = {
   async getCompareData(params: CompareParams): Promise<ChartDataResponse> {
-    const url = buildCompareUrl(params);
+    const url = buildOhlcCompareUrl(params);
     return apiClient.get<ChartDataResponse>(url);
+  },
+  async getLineCompareData(params: CompareParams): Promise<BackendLineDataResponse> {
+    const url = buildLineCompareUrl(params);
+    return apiClient.get<BackendLineDataResponse>(url);
   },
 };

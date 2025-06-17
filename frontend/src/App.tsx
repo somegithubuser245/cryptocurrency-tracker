@@ -3,8 +3,10 @@ import "./App.css";
 import { useConfigData } from "./hooks/useConfigData";
 import { useChartData } from "./hooks/useChartData";
 import { useAppState } from "./hooks/useAppState";
+import Navigation from "./components/Navigation";
 import ControlsBar from "./components/ControlsBar";
 import ChartsContainer from "./components/ChartsContainer";
+import CombinedLineChart from "./components/CombinedLineChart";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorMessage from "./components/ErrorMessage";
 
@@ -16,12 +18,13 @@ function App() {
     loading: configLoading,
     error: configError,
   } = useConfigData();
-
   const {
     data: chartData,
+    lineData,
     loading: chartLoading,
     error: chartError,
     fetchData: fetchChartData,
+    fetchLineData: fetchLineChartData,
   } = useChartData();
 
   const { state, updateState, initializeDefaults, isComplete } = useAppState({
@@ -36,38 +39,50 @@ function App() {
       initializeDefaults();
     }
   }, [configLoading, configError, initializeDefaults]);
-
   // Fetch chart data when all selections are complete
   useEffect(() => {
     if (isComplete) {
-      fetchChartData({
+      const params = {
         exchange1: state.selectedExchange1,
         exchange2: state.selectedExchange2,
         interval: state.selectedTimeRange,
         crypto_id: state.selectedPair,
-      });
+      };
+
+      if (state.chartType === "line") {
+        fetchLineChartData(params);
+      } else {
+        fetchChartData(params);
+      }
     }
   }, [
     state.selectedExchange1,
     state.selectedExchange2,
     state.selectedTimeRange,
     state.selectedPair,
+    state.chartType,
     isComplete,
     fetchChartData,
+    fetchLineChartData,
   ]);
 
   const handleRetryConfig = () => {
     window.location.reload(); // Simple retry for config data
   };
-
   const handleRetryChart = () => {
     if (isComplete) {
-      fetchChartData({
+      const params = {
         exchange1: state.selectedExchange1,
         exchange2: state.selectedExchange2,
         interval: state.selectedTimeRange,
         crypto_id: state.selectedPair,
-      });
+      };
+
+      if (state.chartType === "line") {
+        fetchLineChartData(params);
+      } else {
+        fetchChartData(params);
+      }
     }
   };
 
@@ -80,9 +95,13 @@ function App() {
   if (configError) {
     return <ErrorMessage error={configError} onRetry={handleRetryConfig} />;
   }
-
   return (
     <div className="app">
+      <Navigation
+        currentChartType={state.chartType}
+        onChartTypeChange={(chartType) => updateState({ chartType })}
+      />
+
       <ControlsBar
         exchanges={exchanges}
         timeRanges={timeRanges}
@@ -98,16 +117,45 @@ function App() {
         <ErrorMessage error={chartError} onRetry={handleRetryChart} />
       )}
 
-      {chartData && !chartLoading && !chartError && (
-        <ChartsContainer
-          chartData={chartData}
-          exchanges={exchanges}
-          pairs={pairs}
-          selectedExchange1={state.selectedExchange1}
-          selectedExchange2={state.selectedExchange2}
-          selectedPair={state.selectedPair}
-        />
-      )}
+      {/* Show line chart */}
+      {state.chartType === "line" &&
+        lineData &&
+        !chartLoading &&
+        !chartError && (
+          <div style={{ padding: "20px" }}>
+            <CombinedLineChart
+              data1={lineData[state.selectedExchange1] || []}
+              data2={lineData[state.selectedExchange2] || []}
+              exchange1Name={
+                exchanges.find((e) => e.id === state.selectedExchange1)?.name ||
+                state.selectedExchange1
+              }
+              exchange2Name={
+                exchanges.find((e) => e.id === state.selectedExchange2)?.name ||
+                state.selectedExchange2
+              }
+              pairName={
+                pairs.find((p) => p.id === state.selectedPair)?.name ||
+                state.selectedPair
+              }
+            />
+          </div>
+        )}
+
+      {/* Show OHLC charts */}
+      {state.chartType === "ohlc" &&
+        chartData &&
+        !chartLoading &&
+        !chartError && (
+          <ChartsContainer
+            chartData={chartData}
+            exchanges={exchanges}
+            pairs={pairs}
+            selectedExchange1={state.selectedExchange1}
+            selectedExchange2={state.selectedExchange2}
+            selectedPair={state.selectedPair}
+          />
+        )}
     </div>
   );
 }

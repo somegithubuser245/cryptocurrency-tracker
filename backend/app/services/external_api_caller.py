@@ -1,6 +1,6 @@
 import ccxt
 
-from app.models.schemas import KlinesRequest
+from app.models.schemas import PriceTicketRequest
 
 
 class CryptoFetcher:
@@ -12,7 +12,7 @@ class CryptoFetcher:
     def __init__(self) -> None:
         pass
 
-    def get_response(self, request: KlinesRequest) -> list[list[float]]:
+    def get_ohlc(self, request: PriceTicketRequest) -> list[list[float]]:
         exchange = self.get_exchange(request.api_provider)
         return exchange.fetch_ohlcv(
             request.crypto_id.replace("-", "/"),

@@ -7,6 +7,15 @@ export interface ChartDataResponse {
   [exchangeName: string]: KlineData[];
 }
 
+export interface LineDataResponse {
+  [exchangeName: string]: LineData[];
+}
+
+// Backend response format for line data (has 'open' instead of 'value')
+export interface BackendLineDataResponse {
+  [exchangeName: string]: BackendLineData[];
+}
+
 export interface KlineData {
   time: number;
   open: number;
@@ -15,6 +24,19 @@ export interface KlineData {
   close: number;
   volume?: number;
 }
+
+export interface LineData {
+  time: number;
+  value: number;
+}
+
+export interface BackendLineData {
+  time: number;
+  open: number;
+}
+
+// Chart Types
+export type ChartType = 'line' | 'ohlc';
 
 // UI Types
 export interface SelectOption {
@@ -47,9 +69,11 @@ export interface UseConfigData {
 
 export interface UseChartData {
   data: ChartDataResponse | null;
+  lineData: LineDataResponse | null;
   loading: boolean;
   error: string | null;
   fetchData: (params: CompareParams) => Promise<void>;
+  fetchLineData: (params: CompareParams) => Promise<void>;
 }
 
 // State Types
@@ -58,4 +82,5 @@ export interface AppState {
   selectedExchange2: string;
   selectedTimeRange: string;
   selectedPair: string;
+  chartType: ChartType;
 }

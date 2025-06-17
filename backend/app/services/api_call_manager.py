@@ -1,8 +1,8 @@
-from app.models.schemas import CompareRequest, KlinesRequest
+from app.config.config import TickerType
+from app.models.schemas import CompareRequest, PriceTicketRequest
+from app.services.caching import Cacher
+from app.services.external_api_caller import CryptoFetcher
 from app.services.timeframes_equalizer import Equalizer
-
-from .caching import Cacher
-from .external_api_caller import CryptoFetcher
 
 
 class ApiCallManager:
@@ -13,22 +13,28 @@ class ApiCallManager:
         self.equalizer = Equalizer()
         self.redis_cacher = Cacher()
 
-    def get_timeframe_aligned(self, request: CompareRequest) -> dict[str, dict[str, float | int]]:
+    def get_timeframe_aligned(
+        self, request: CompareRequest, type: TickerType
+    ) -> dict[str, dict[str, float | int]]:
+        exchanges = [request.exchange1, request.exchange2]
+
         requests = [
-            KlinesRequest(
-                crypto_id=request.crypto_id,
-                interval=request.interval,
-                api_provider=request.exchange1,
-            ),
-            KlinesRequest(
-                crypto_id=request.crypto_id,
-                interval=request.interval,
-                api_provider=request.exchange2,
-            ),
+            PriceTicketRequest(
+                crypto_id=request.crypto_id, interval=request.interval, api_provider=exchange
+            )
+            for exchange in exchanges
         ]
-        data_sets_raw = [self.data_fetcher.get_response(value) for value in requests]
-        data_set1, data_set2 = self.equalizer.equalize_timeframes(
-            data_sets_raw[0], data_sets_raw[1]
+
+        data_sets_raw = [self.data_fetcher.get_ohlc(value) for value in requests]
+
+        column_names = list(self.equalizer.cnames)
+        columns_to_drop = column_names[-1] if type == TickerType.OHLC else column_names[2:]
+
+        eq_data_exchange1, eq_data_exchange2 = self.equalizer.equalize_timeframes(
+            data_sets_raw[0], data_sets_raw[1], columns_to_drop
         )
 
-        return {request.exchange1.value: data_set1, request.exchange2.value: data_set2}
+        return {
+            request.exchange1.value: eq_data_exchange1,
+            request.exchange2.value: eq_data_exchange2,
+        }

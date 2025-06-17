@@ -13,6 +13,7 @@ export const useAppState = ({ exchanges, timeRanges, pairs }: UseAppStateOptions
     selectedExchange2: '',
     selectedTimeRange: '',
     selectedPair: '',
+    chartType: 'line', // Default to line charts
   });
 
   // Initialize default selections when data is available
@@ -28,6 +29,7 @@ export const useAppState = ({ exchanges, timeRanges, pairs }: UseAppStateOptions
         selectedExchange2: exchanges[1].id,
         selectedTimeRange: timeRanges[0].id,
         selectedPair: pairs[0].id,
+        chartType: 'line', // Default to line charts
       });
     }
   }, [exchanges, timeRanges, pairs, state.selectedExchange1]);

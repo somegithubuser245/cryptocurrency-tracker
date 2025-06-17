@@ -1,5 +1,5 @@
 import logging
-from enum import Enum
+from enum import Enum, StrEnum, auto
 
 from pydantic_settings import BaseSettings
 
@@ -40,6 +40,11 @@ class Exchange(str, Enum):
     BINGX = "bingx"
 
 
+class TickerType(StrEnum):
+    OHLC = auto()
+    CHART_LINE = auto()
+
+
 SUPPORTED_EXCHANGES: dict = {entry: entry.value for entry in Exchange}
 
 # used for frontend
@@ -60,4 +65,14 @@ SUPPORTED_PAIRS: dict = {
     "ADA-USDT": "Cardano",
     "AVAX-USDT": "Avalanche",
     "DOT-USDT": "Polkadot",
+    "DOGE-USDT": "Dogecoin",
+    "SHIB-USDT": "Shiba Inu",
+    "LTC-USDT": "Litecoin",
+    "BCH-USDT": "Bitcoin Cash",
+    "ETC-USDT": "Ethereum Classic",
+    "XRP-USDT": "Ripple",
+    "TRX-USDT": "Tron",
+    "LINK-USDT": "Chainlink",
+    "UNI-USDT": "Uniswap",
+    "AAVE-USDT": "Aave",
 }

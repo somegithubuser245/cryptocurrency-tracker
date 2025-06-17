@@ -16,6 +16,8 @@ export { default as LoadingSpinner } from './components/LoadingSpinner';
 export { default as ErrorMessage } from './components/ErrorMessage';
 export { default as ChartCard } from './components/ChartCard';
 export { default as Chart } from './components/Chart';
+export { default as Navigation } from './components/Navigation';
+export { default as CombinedLineChart } from './components/CombinedLineChart';
 
 // Type exports
 export * from './types';

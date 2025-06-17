@@ -8,13 +8,15 @@ config_types: dict[str, dict] = {
     "exchanges": SUPPORTED_EXCHANGES,
 }
 
+
 class CompareRequest(BaseModel):
     exchange1: Exchange
     exchange2: Exchange
     crypto_id: str
     interval: str = "1h"
 
-class KlinesRequest(BaseModel):
+
+class PriceTicketRequest(BaseModel):
     crypto_id: str
     interval: str = "1h"
     api_provider: Exchange
