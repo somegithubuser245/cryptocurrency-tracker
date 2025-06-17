@@ -36,6 +36,8 @@ class Exchange(str, Enum):
     BINANCE = "binance"
     OKX = "okx"
     BYBIT = "bybit"
+    MEXC = "mexc"
+    BINGX = "bingx"
 
 
 SUPPORTED_EXCHANGES: dict = {entry: entry.value for entry in Exchange}

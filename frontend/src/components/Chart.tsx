@@ -7,14 +7,15 @@ import {
   Background,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
+import type { KlineData } from "../types";
 
-interface Props {
-  data: any;
+interface ChartProps {
+  data: KlineData[];
   textColor?: string;
   background?: DeepPartial<Background>;
 }
 
-function Chart({ data, textColor, background }: Props) {
+function Chart({ data, textColor, background }: ChartProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -44,10 +45,18 @@ function Chart({ data, textColor, background }: Props) {
       width: container.getBoundingClientRect().width,
       height: window.innerHeight / 3,
     };
-
     const chart = createChart(container, chartOptions);
     const candleStickSeries = chart.addSeries(CandlestickSeries);
-    candleStickSeries.setData(data);
+    // Transform data to lightweight-charts format
+    const transformedData = data.map((item) => ({
+      time: Math.floor(item.time) as any, // Convert to seconds and cast to Time type
+      open: item.open,
+      high: item.high,
+      low: item.low,
+      close: item.close,
+    }));
+
+    candleStickSeries.setData(transformedData);
 
     const handleResize = () => {
       if (container) {
