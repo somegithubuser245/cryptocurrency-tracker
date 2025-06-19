@@ -1,3 +1,5 @@
+import asyncio
+
 from config.config import TickerType
 from models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
@@ -9,11 +11,10 @@ class ApiCallManager:
     """Main class that handles calls from FastAPI"""
 
     def __init__(self) -> None:
-        self.data_fetcher = CryptoFetcher()
         self.equalizer = Equalizer()
         self.redis_cacher = Cacher()
 
-    def get_timeframe_aligned(
+    async def get_timeframe_aligned(
         self, request: CompareRequest, type: TickerType
     ) -> dict[str, dict[str, float | int]]:
         exchanges = [request.exchange1, request.exchange2]
@@ -25,7 +26,10 @@ class ApiCallManager:
             for exchange in exchanges
         ]
 
-        data_sets_raw = [self.data_fetcher.get_ohlc(value) for value in requests]
+        async with CryptoFetcher() as fetcher:
+            data_sets_raw = await asyncio.gather(
+                *[fetcher.get_ohlc(ticket_request) for ticket_request in requests]
+            )
 
         column_names = list(self.equalizer.cnames)
         columns_to_drop = column_names[-1] if type == TickerType.OHLC else column_names[2:]

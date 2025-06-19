@@ -9,11 +9,11 @@ crypto_router = APIRouter(prefix="/crypto")
 async def get_klines_data(
     request: CompareRequest = Query(),  # noqa: B008
 ) -> dict[str, list[dict[str, float | int]]]:
-    return ApiCallManager().get_timeframe_aligned(request, "ohlc")
+    return await ApiCallManager().get_timeframe_aligned(request, "ohlc")
 
 
 @crypto_router.get("/line-compare")
 async def get_both_charts(
     request: CompareRequest = Query(),
 ) -> dict[str, list[dict[str, int | float]]]:
-    return ApiCallManager().get_timeframe_aligned(request, "chart_line")
+    return await ApiCallManager().get_timeframe_aligned(request, "chart_line")
