@@ -1,6 +1,5 @@
 import ccxt
-
-from app.models.schemas import PriceTicketRequest
+from models.schemas import PriceTicketRequest
 
 
 class CryptoFetcher:

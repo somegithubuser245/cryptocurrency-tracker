@@ -1,7 +1,6 @@
 import redis
-
-from app.config.config import logger, settings
-from app.models.schemas import PriceTicketRequest
+from config.config import logger, settings
+from models.schemas import PriceTicketRequest
 
 
 class Cacher:

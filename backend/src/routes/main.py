@@ -1,10 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from app.routes.crypto_data import crypto_router
-from app.routes.static_data import static_router
-from app.services.api_call_manager import ApiCallManager
+from routes.crypto_data import crypto_router
+from routes.static_data import static_router
+from services.api_call_manager import ApiCallManager
 
 # Setup
 app = FastAPI()

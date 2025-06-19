@@ -1,8 +1,8 @@
-from app.config.config import TickerType
-from app.models.schemas import CompareRequest, PriceTicketRequest
-from app.services.caching import Cacher
-from app.services.external_api_caller import CryptoFetcher
-from app.services.timeframes_equalizer import Equalizer
+from config.config import TickerType
+from models.schemas import CompareRequest, PriceTicketRequest
+from services.caching import Cacher
+from services.external_api_caller import CryptoFetcher
+from utils.timeframes_equalizer import Equalizer
 
 
 class ApiCallManager:

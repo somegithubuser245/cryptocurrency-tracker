@@ -1,15 +1,18 @@
 FROM node:20-alpine
 
-WORKDIR /frontend
+WORKDIR /app
 
-# Copy package files first for better caching
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production=false
 
-# Copy application code
+# Install dependencies
+RUN npm install
+
+# Copy source code
 COPY . .
 
+# Expose port
 EXPOSE 5173
 
-# Use development server with hot reload
+# Start development server with host binding
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

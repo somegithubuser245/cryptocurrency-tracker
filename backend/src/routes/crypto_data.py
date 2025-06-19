@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Query
-
-from app.models.schemas import CompareRequest
-from app.services.api_call_manager import ApiCallManager
+from models.schemas import CompareRequest
+from services.api_call_manager import ApiCallManager
 
 crypto_router = APIRouter(prefix="/crypto")
 

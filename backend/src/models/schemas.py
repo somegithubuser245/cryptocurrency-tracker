@@ -1,6 +1,5 @@
+from config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
 from pydantic import BaseModel
-
-from app.config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
 
 config_types: dict[str, dict] = {
     "timeranges": TIME_RANGES,

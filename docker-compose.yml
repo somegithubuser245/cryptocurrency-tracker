@@ -4,45 +4,32 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/backend
-      - /backend/__pycache__
-      - /backend/.pytest_cache
-      - /backend/app/__pycache__
+      - ./backend/src:/app
+      - /src/__pycache__
+      - /src/.pytest_cache
     environment:
       - PYTHONUNBUFFERED=1
       - REDIS_HOST=redis
     depends_on:
       - redis
-    develop:
-      watch:
-        - action: sync
-          path: ./backend
-          target: /backend
-          ignore:
-            - __pycache__
-            - "*.pyc"
-            - .pytest_cache
-        - action: rebuild
-          path: ./backend/requirements.txt
 
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/frontend
-      - /frontend/node_modules
-      - /frontend/dist
-    develop:
-      watch:
-        - action: sync
-          path: ./frontend/src
-          target: /frontend/src
-        - action: sync
-          path: ./frontend/public
-          target: /frontend/public
-        - action: rebuild
-          path: ./frontend/package.json
+      # Mount source code for hot reloading
+      - ./frontend:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      # Enable polling for file changes (important for Docker)
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
 
   redis:
     image: "redis:alpine"
