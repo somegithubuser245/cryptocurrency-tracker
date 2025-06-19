@@ -13,6 +13,7 @@ class ApiCallManager:
     def __init__(self) -> None:
         self.equalizer = Equalizer()
         self.redis_cacher = Cacher()
+        self.fetcher = CryptoFetcher()
 
     async def get_timeframe_aligned(
         self, request: CompareRequest, type: TickerType
@@ -26,10 +27,9 @@ class ApiCallManager:
             for exchange in exchanges
         ]
 
-        async with CryptoFetcher() as fetcher:
-            data_sets_raw = await asyncio.gather(
-                *[fetcher.get_ohlc(ticket_request) for ticket_request in requests]
-            )
+        data_sets_raw = await asyncio.gather(
+            *[self.fetcher.get_ohlc(ticket_request) for ticket_request in requests]
+        )
 
         column_names = list(self.equalizer.cnames)
         columns_to_drop = column_names[-1] if type == TickerType.OHLC else column_names[2:]
