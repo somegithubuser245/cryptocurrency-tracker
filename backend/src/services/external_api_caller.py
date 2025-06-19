@@ -1,13 +1,12 @@
 import asyncio
 
 import ccxt.async_support as ccxt
-from models.schemas import PriceTicketRequest
+from routes.models.schemas import PriceTicketRequest
 
 
 class CryptoFetcher:
-    """This is basically a reqest wrapper
-    It just adds some binance API related PATHs
-    and makes some additional checks
+    """
+    CCXT wrapper with internal functions
     """
 
     def __init__(self) -> None:
@@ -29,6 +28,7 @@ class CryptoFetcher:
         return getattr(ccxt, exchange_name)()
 
     async def close_all(self) -> None:
+        """Close all exchange connections after completing async call"""
         if not self._exchanges:
             return
 
@@ -41,5 +41,5 @@ class CryptoFetcher:
     async def __aenter__(self) -> "CryptoFetcher":
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> "CryptoFetcher":  # noqa: ANN001
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> "CryptoFetcher":  # noqa: ANN001  # used for context manager
         await self.close_all()

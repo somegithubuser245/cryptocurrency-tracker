@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.schemas import config_types
+from routes.models.schemas import config_types
 
 static_router = APIRouter(prefix="/static")
 

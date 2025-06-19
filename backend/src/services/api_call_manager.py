@@ -1,7 +1,7 @@
 import asyncio
 
 from config.config import TickerType
-from models.schemas import CompareRequest, PriceTicketRequest
+from routes.models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
 from utils.timeframes_equalizer import Equalizer
