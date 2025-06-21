@@ -38,6 +38,8 @@ class Exchange(str, Enum):
     BYBIT = "bybit"
     MEXC = "mexc"
     BINGX = "bingx"
+    GATEIO = "gateio"
+    KUCION = "kucoin"
 
 
 class TickerType(StrEnum):
@@ -75,4 +77,5 @@ SUPPORTED_PAIRS: dict = {
     "LINK-USDT": "Chainlink",
     "UNI-USDT": "Uniswap",
     "AAVE-USDT": "Aave",
+    "XEM-USDT": "XEM",
 }
