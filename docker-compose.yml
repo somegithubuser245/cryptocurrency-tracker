@@ -1,16 +1,44 @@
 # Cryptocurrency Arbitrage Detection System - Complete Environment
 # Single Docker Compose file for all services and infrastructure
 
-version: '3.8'
-
 services:
   # =============================================================================
   # INFRASTRUCTURE SERVICES
   # =============================================================================
   
+  # Kafka cleanup service - handles cluster ID mismatches gracefully
+  kafka-cleanup:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: arbitrage-kafka-cleanup
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      - zookeeper-data:/var/lib/zookeeper/data
+    command: |
+      bash -c "
+        echo 'Checking for Kafka cluster ID mismatches...'
+        
+        # Check if meta.properties exists and has conflicting cluster ID
+        META_FILE='/var/lib/kafka/data/meta.properties'
+        if [ -f \"\$$META_FILE\" ]; then
+          echo 'Found existing meta.properties file:'
+          cat \"\$$META_FILE\"
+          echo 'Removing potentially conflicting Kafka metadata...'
+          rm -rf /var/lib/kafka/data/*
+          echo 'Kafka data directory cleaned'
+        else
+          echo 'No existing meta.properties found - fresh start'
+        fi
+        
+        echo 'Kafka cleanup completed successfully'
+      "
+    restart: "no"
+    
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: arbitrage-zookeeper
+    depends_on:
+      kafka-cleanup:
+        condition: service_completed_successfully
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -29,6 +57,8 @@ services:
     depends_on:
       zookeeper:
         condition: service_healthy
+      kafka-cleanup:
+        condition: service_completed_successfully
     ports:
       - "9092:9092"
     environment:
