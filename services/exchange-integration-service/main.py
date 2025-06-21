@@ -7,6 +7,7 @@ Unified API management for multiple cryptocurrency exchanges:
 - Authentication handling
 - Order execution
 - Balance tracking
+- Trading fee fetching (real-time)
 - Error handling and retry logic
 """
 
@@ -292,6 +293,53 @@ class ExchangeManager:
         except Exception as e:
             logger.error(f"Error canceling order on {exchange_name}: {e}")
             return False
+
+    async def get_trading_fees(self, exchange_name: str, symbol: Optional[str] = None) -> Dict[str, Any]:
+        """Get real-time trading fees from exchange"""
+        if exchange_name not in self.exchanges:
+            raise HTTPException(status_code=404, detail=f"Exchange {exchange_name} not configured")
+        
+        try:
+            # Apply rate limiting
+            if exchange_name in self.rate_limiters:
+                await self.rate_limiters[exchange_name].wait_for_slot()
+            
+            exchange = self.exchanges[exchange_name]
+            
+            # Try to get trading fees from exchange
+            try:
+                if symbol:
+                    # Some exchanges support symbol-specific fees
+                    fees = await exchange.fetch_trading_fees([symbol])
+                else:
+                    fees = await exchange.fetch_trading_fees()
+            except Exception:
+                # Fallback to exchange defaults if API doesn't support fee fetching
+                logger.warning(f"Could not fetch fees from {exchange_name} API, using defaults")
+                fees = {
+                    'trading': {
+                        'maker': exchange.fees.get('trading', {}).get('maker', 0.001),
+                        'taker': exchange.fees.get('trading', {}).get('taker', 0.001),
+                        'percentage': True
+                    }
+                }
+            
+            # Cache fees in Redis for quick access by arbitrage service
+            if self.redis_client:
+                cache_key = f"fees:{exchange_name}"
+                if symbol:
+                    cache_key += f":{symbol}"
+                await self.redis_client.setex(
+                    cache_key, 
+                    3600,  # Cache for 1 hour
+                    json.dumps(fees)
+                )
+            
+            return fees
+            
+        except Exception as e:
+            logger.error(f"Error fetching fees from {exchange_name}: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
     
     async def _publish_trade_execution(self, order: OrderResponse):
         """Publish trade execution to Kafka"""
@@ -359,6 +407,31 @@ async def cancel_order(exchange_name: str, order_id: str, symbol: str):
     """Cancel order"""
     success = await exchange_manager.cancel_order(exchange_name, order_id, symbol)
     return {"canceled": success}
+
+@app.get("/exchanges/{exchange_name}/fees")
+async def get_exchange_fees(exchange_name: str):
+    """Get current trading fees for exchange"""
+    fees = await exchange_manager.get_trading_fees(exchange_name)
+    return {"exchange": exchange_name, "fees": fees}
+
+@app.get("/exchanges/{exchange_name}/fees/{symbol}")
+async def get_symbol_fees(exchange_name: str, symbol: str):
+    """Get trading fees for specific symbol"""
+    fees = await exchange_manager.get_trading_fees(exchange_name, symbol)
+    
+    # Extract relevant fee structure
+    fee_structure = {
+        'maker': fees.get('trading', {}).get('maker', 0.001),
+        'taker': fees.get('trading', {}).get('taker', 0.001),
+        'percentage': fees.get('trading', {}).get('percentage', True),
+        'withdrawal': fees.get('funding', {}).get('withdraw', {})
+    }
+    
+    return {
+        "exchange": exchange_name,
+        "symbol": symbol,
+        "fees": fee_structure
+    }
 
 if __name__ == "__main__":
     import uvicorn

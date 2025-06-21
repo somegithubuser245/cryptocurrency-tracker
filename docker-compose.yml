@@ -144,55 +144,17 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-    command: |
+    command: >
       bash -c "
-        echo 'Creating Kafka topics...'
-        
-        # Price updates topic - high throughput, short retention
-        kafka-topics --create --topic price-updates \
-          --bootstrap-server kafka:29092 \
-          --partitions 12 \
-          --replication-factor 1 \
-          --config retention.ms=86400000 \
-          --config compression.type=gzip \
-          --config max.message.bytes=1048576 \
-          --if-not-exists
-        
-        # Arbitrage opportunities topic - medium throughput, longer retention
-        kafka-topics --create --topic arbitrage-opportunities \
-          --bootstrap-server kafka:29092 \
-          --partitions 6 \
-          --replication-factor 1 \
-          --config retention.ms=604800000 \
-          --config compression.type=gzip \
-          --if-not-exists
-        
-        # Trade executions topic - low throughput, long retention
-        kafka-topics --create --topic trade-executions \
-          --bootstrap-server kafka:29092 \
-          --partitions 3 \
-          --replication-factor 1 \
-          --config retention.ms=2592000000 \
-          --config compression.type=gzip \
-          --if-not-exists
-        
-        # Risk management alerts topic
-        kafka-topics --create --topic risk-alerts \
-          --bootstrap-server kafka:29092 \
-          --partitions 2 \
-          --replication-factor 1 \
-          --config retention.ms=259200000 \
-          --if-not-exists
-        
-        # Portfolio updates topic
-        kafka-topics --create --topic portfolio-updates \
-          --bootstrap-server kafka:29092 \
-          --partitions 2 \
-          --replication-factor 1 \
-          --config retention.ms=604800000 \
-          --if-not-exists
-        
-        echo 'Kafka topics created successfully!'
+        echo 'Waiting for Kafka to be ready...' &&
+        sleep 10 &&
+        echo 'Creating Kafka topics...' &&
+        kafka-topics --create --topic price-updates --bootstrap-server kafka:29092 --partitions 12 --replication-factor 1 --config retention.ms=86400000 --config compression.type=gzip --config max.message.bytes=1048576 --if-not-exists &&
+        kafka-topics --create --topic arbitrage-opportunities --bootstrap-server kafka:29092 --partitions 6 --replication-factor 1 --config retention.ms=604800000 --config compression.type=gzip --if-not-exists &&
+        kafka-topics --create --topic trade-executions --bootstrap-server kafka:29092 --partitions 3 --replication-factor 1 --config retention.ms=2592000000 --config compression.type=gzip --if-not-exists &&
+        kafka-topics --create --topic risk-alerts --bootstrap-server kafka:29092 --partitions 2 --replication-factor 1 --config retention.ms=259200000 --if-not-exists &&
+        kafka-topics --create --topic portfolio-updates --bootstrap-server kafka:29092 --partitions 2 --replication-factor 1 --config retention.ms=604800000 --if-not-exists &&
+        echo 'Kafka topics created successfully!' &&
         kafka-topics --list --bootstrap-server kafka:29092
       "
     restart: "no"
