@@ -147,7 +147,7 @@ function App() {
             lineData &&
             !chartLoading &&
             !chartError && (
-              <div style={{ padding: "20px" }}>
+              <div className="line-chart-container">
                 <CombinedLineChart
                   data1={lineData[state.selectedExchange1] || []}
                   data2={lineData[state.selectedExchange2] || []}
@@ -172,14 +172,16 @@ function App() {
             chartData &&
             !chartLoading &&
             !chartError && (
-              <ChartsContainer
-                chartData={chartData}
-                exchanges={exchanges}
-                pairs={pairs}
-                selectedExchange1={state.selectedExchange1}
-                selectedExchange2={state.selectedExchange2}
-                selectedPair={state.selectedPair}
-              />
+              <div className="charts-container">
+                <ChartsContainer
+                  chartData={chartData}
+                  exchanges={exchanges}
+                  pairs={pairs}
+                  selectedExchange1={state.selectedExchange1}
+                  selectedExchange2={state.selectedExchange2}
+                  selectedPair={state.selectedPair}
+                />
+              </div>
             )}
         </>
       )}

@@ -13,37 +13,58 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
-        gap: "15px",
-        backgroundColor: "#fee",
-        border: "1px solid #fcc",
-        borderRadius: "8px",
+        padding: "24px",
+        gap: "16px",
+        backgroundColor: "var(--color-surface)",
+        border: "1px solid var(--color-error)",
+        borderRadius: "var(--border-radius-lg)",
         margin: "20px",
+        boxShadow: "var(--shadow)",
       }}
     >
       <div
         style={{
-          color: "#c33",
-          fontSize: "18px",
-          fontWeight: "bold",
+          color: "var(--color-error)",
+          fontSize: "48px",
+          marginBottom: "8px",
         }}
       >
-        ⚠️ Error
+        ⚠️
       </div>
-      <p style={{ color: "#666", textAlign: "center", margin: 0 }}>{error}</p>
+      <div
+        style={{
+          color: "var(--color-error)",
+          fontSize: "18px",
+          fontWeight: "600",
+          marginBottom: "4px",
+        }}
+      >
+        Something went wrong
+      </div>
+      <p 
+        style={{ 
+          color: "var(--color-text-secondary)", 
+          textAlign: "center", 
+          margin: 0,
+          fontSize: "14px",
+          lineHeight: "1.5",
+          maxWidth: "400px"
+        }}
+      >
+        {error}
+      </p>
       {onRetry && (
         <button
           onClick={onRetry}
+          className="btn btn-primary"
           style={{
-            padding: "8px 16px",
-            backgroundColor: "#3498db",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
+            marginTop: "8px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            fontWeight: "500",
           }}
         >
-          Retry
+          🔄 Try Again
         </button>
       )}
     </div>

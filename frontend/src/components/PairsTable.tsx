@@ -66,32 +66,44 @@ const PairsTable: React.FC<PairsTableProps> = ({
   }
 
   return (
-    <div style={{ padding: '20px', backgroundColor: '#ffffff', minHeight: '100vh' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ margin: '0 0 15px 0', color: '#000000', fontSize: '24px' }}>
-          Cryptocurrency Pairs Exchange Support
+    <div style={{ 
+      padding: '24px', 
+      backgroundColor: 'var(--color-background)', 
+      minHeight: '100vh' 
+    }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ 
+          margin: '0 0 8px 0', 
+          color: 'var(--color-text)', 
+          fontSize: '28px',
+          fontWeight: '600' 
+        }}>
+          📋 Exchange Support Matrix
         </h2>
+        <p style={{
+          margin: '0 0 20px 0',
+          color: 'var(--color-text-secondary)',
+          fontSize: '14px'
+        }}>
+          Find which exchanges support your favorite cryptocurrency pairs
+        </p>
         
         {/* Search Bar */}
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '20px' }}>
           <input
             type="text"
-            placeholder="Search pairs (e.g., BTC, ETH, USDT)..."
+            placeholder="🔍 Search pairs (e.g., BTC, ETH, USDT)..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1); // Reset to first page when searching
             }}
+            className="input"
             style={{
               width: '100%',
-              maxWidth: '400px',
-              padding: '12px',
-              fontSize: '16px',
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              outline: 'none',
-              backgroundColor: '#ffffff',
-              color: '#000000',
+              maxWidth: '500px',
+              padding: '12px 16px',
+              fontSize: '14px',
             }}
           />
         </div>
@@ -99,55 +111,86 @@ const PairsTable: React.FC<PairsTableProps> = ({
         {/* Stats */}
         <div style={{ 
           display: 'flex', 
-          gap: '20px', 
-          marginBottom: '20px',
-          fontSize: '14px',
-          color: '#666666'
+          gap: '24px', 
+          marginBottom: '24px',
+          fontSize: '13px',
+          color: 'var(--color-text-secondary)',
+          flexWrap: 'wrap'
         }}>
-          <span>Total Pairs: {filteredPairs.length}</span>
-          <span>Total Exchanges: {allExchanges.length}</span>
-          {searchTerm && <span>Filtered from {Object.keys(pairsData).length} total pairs</span>}
+          <div style={{ 
+            padding: '8px 12px',
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: 'var(--border-radius)',
+            border: '1px solid var(--color-border)'
+          }}>
+            📊 <strong>{filteredPairs.length}</strong> pairs
+          </div>
+          <div style={{ 
+            padding: '8px 12px',
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: 'var(--border-radius)',
+            border: '1px solid var(--color-border)'
+          }}>
+            🏪 <strong>{allExchanges.length}</strong> exchanges
+          </div>
+          {searchTerm && (
+            <div style={{ 
+              padding: '8px 12px',
+              backgroundColor: 'var(--color-primary)',
+              color: 'white',
+              borderRadius: 'var(--border-radius)'
+            }}>
+              Filtered from <strong>{Object.keys(pairsData).length}</strong> total pairs
+            </div>
+          )}
         </div>
       </div>
 
       {/* Table Container with Horizontal Scroll */}
       <div style={{ 
         overflowX: 'auto',
-        border: '1px solid #e0e0e0',
-        borderRadius: '8px',
-        backgroundColor: '#ffffff'
+        overflowY: 'auto',
+        maxHeight: '70vh',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--border-radius-lg)',
+        backgroundColor: 'var(--color-surface)',
+        boxShadow: 'var(--shadow)'
       }}>
         <table style={{ 
           width: '100%', 
           borderCollapse: 'collapse',
           minWidth: `${Math.max(600, allExchanges.length * 100 + 200)}px`
         }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f8f9fa' }}>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 20 }}>
+            <tr style={{ backgroundColor: 'var(--color-surface-light)' }}>
               <th style={{
-                padding: '12px',
+                padding: '16px',
                 textAlign: 'left',
-                fontWeight: 'bold',
-                color: '#000000',
-                borderBottom: '2px solid #e0e0e0',
+                fontWeight: '600',
+                color: 'var(--color-text)',
+                borderBottom: '2px solid var(--color-border)',
                 position: 'sticky',
                 left: 0,
-                backgroundColor: '#f8f9fa',
-                zIndex: 10,
-                minWidth: '150px'
+                backgroundColor: 'var(--color-surface-light)',
+                zIndex: 21,
+                minWidth: '150px',
+                fontSize: '14px',
+                boxShadow: '2px 0 4px rgba(0,0,0,0.2)'
               }}>
-                Pair
+                Cryptocurrency Pair
               </th>
               {allExchanges.map((exchange) => (
                 <th key={exchange} style={{
-                  padding: '12px',
+                  padding: '16px 12px',
                   textAlign: 'center',
-                  fontWeight: 'bold',
-                  color: '#000000',
-                  borderBottom: '2px solid #e0e0e0',
-                  borderLeft: '1px solid #e0e0e0',
-                  minWidth: '80px',
-                  fontSize: '12px'
+                  fontWeight: '600',
+                  color: 'var(--color-text)',
+                  borderBottom: '2px solid var(--color-border)',
+                  borderLeft: '1px solid var(--color-border)',
+                  minWidth: '90px',
+                  fontSize: '12px',
+                  textTransform: 'capitalize',
+                  backgroundColor: 'var(--color-surface-light)'
                 }}>
                   {exchange}
                 </th>
@@ -157,17 +200,20 @@ const PairsTable: React.FC<PairsTableProps> = ({
           <tbody>
             {paginatedPairs.map((pair, index) => (
               <tr key={pair} style={{ 
-                backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8f9fa'
+                backgroundColor: index % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-light)',
+                transition: 'background-color 0.2s ease'
               }}>
                 <td style={{
-                  padding: '12px',
-                  fontWeight: 'bold',
-                  color: '#000000',
-                  borderBottom: '1px solid #e0e0e0',
+                  padding: '14px 16px',
+                  fontWeight: '600',
+                  color: 'var(--color-text)',
+                  borderBottom: '1px solid var(--color-border)',
                   position: 'sticky',
                   left: 0,
-                  backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8f9fa',
-                  zIndex: 5
+                  backgroundColor: index % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-light)',
+                  zIndex: 5,
+                  fontSize: '14px',
+                  boxShadow: '2px 0 4px rgba(0,0,0,0.2)'
                 }}>
                   {pair}
                 </td>
@@ -175,21 +221,23 @@ const PairsTable: React.FC<PairsTableProps> = ({
                   const isSupported = pairsData[pair]?.includes(exchange);
                   return (
                     <td key={exchange} style={{
-                      padding: '12px',
+                      padding: '14px 12px',
                       textAlign: 'center',
-                      borderBottom: '1px solid #e0e0e0',
-                      borderLeft: '1px solid #e0e0e0'
+                      borderBottom: '1px solid var(--color-border)',
+                      borderLeft: '1px solid var(--color-border)'
                     }}>
                       <span style={{
-                        display: 'inline-block',
-                        width: '20px',
-                        height: '20px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
                         borderRadius: '50%',
-                        backgroundColor: isSupported ? '#007bff' : '#e0e0e0',
-                        color: isSupported ? '#ffffff' : '#999999',
+                        backgroundColor: isSupported ? 'var(--color-success)' : 'var(--color-surface-light)',
+                        color: isSupported ? '#ffffff' : 'var(--color-text-secondary)',
                         fontSize: '12px',
-                        lineHeight: '20px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        border: isSupported ? 'none' : '1px solid var(--color-border)'
                       }}>
                         {isSupported ? '✓' : '✗'}
                       </span>
@@ -205,46 +253,46 @@ const PairsTable: React.FC<PairsTableProps> = ({
       {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ 
-          marginTop: '20px', 
+          marginTop: '24px', 
           display: 'flex', 
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '10px'
+          gap: '12px'
         }}>
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
+            className={`btn ${currentPage === 1 ? 'btn-secondary' : 'btn-primary'}`}
             style={{
-              padding: '8px 16px',
-              backgroundColor: currentPage === 1 ? '#e0e0e0' : '#007bff',
-              color: currentPage === 1 ? '#999999' : '#ffffff',
-              border: 'none',
-              borderRadius: '4px',
+              opacity: currentPage === 1 ? 0.5 : 1,
               cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
             }}
           >
-            Previous
+            ← Previous
           </button>
           
-          <span style={{ color: '#666666', fontSize: '14px' }}>
-            Page {currentPage} of {totalPages}
-          </span>
+          <div style={{ 
+            padding: '8px 16px',
+            backgroundColor: 'var(--color-surface)',
+            borderRadius: 'var(--border-radius)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text)',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+          </div>
           
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
+            className={`btn ${currentPage === totalPages ? 'btn-secondary' : 'btn-primary'}`}
             style={{
-              padding: '8px 16px',
-              backgroundColor: currentPage === totalPages ? '#e0e0e0' : '#007bff',
-              color: currentPage === totalPages ? '#999999' : '#ffffff',
-              border: 'none',
-              borderRadius: '4px',
+              opacity: currentPage === totalPages ? 0.5 : 1,
               cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
             }}
           >
-            Next
+            Next →
           </button>
         </div>
       )}
@@ -252,11 +300,17 @@ const PairsTable: React.FC<PairsTableProps> = ({
       {filteredPairs.length === 0 && searchTerm && (
         <div style={{ 
           textAlign: 'center', 
-          padding: '40px', 
-          color: '#666666',
-          fontSize: '16px'
+          padding: '60px 20px', 
+          color: 'var(--color-text-secondary)',
+          fontSize: '16px',
+          backgroundColor: 'var(--color-surface)',
+          borderRadius: 'var(--border-radius-lg)',
+          border: '1px solid var(--color-border)',
+          marginTop: '24px'
         }}>
-          No pairs found matching "{searchTerm}"
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+          <div style={{ fontWeight: '500', marginBottom: '8px' }}>No pairs found</div>
+          <div>No cryptocurrency pairs match "{searchTerm}"</div>
         </div>
       )}
     </div>
