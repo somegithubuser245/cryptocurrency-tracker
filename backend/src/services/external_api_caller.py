@@ -2,7 +2,6 @@ import asyncio
 
 import ccxt.async_support as ccxt
 from config.config import SUPPORTED_EXCHANGES
-from config.config import Exchange as ExchangeEnum
 from routes.models.schemas import PriceTicketRequest
 
 
@@ -50,7 +49,7 @@ class CryptoFetcher:
             [symbol for symbol in unique_symbols if all_symbols.count(symbol) > 1]
         )
 
-        pairs_exchanges_dict: dict[str, list[ExchangeEnum]] = {}
+        pairs_exchanges_dict: dict[str, list[str]] = {}
         for symbol in arbitrable_symbols:
             for exchange in exchanges:
                 exchange_name = exchange.id

@@ -38,6 +38,14 @@ export interface BackendLineData {
 // Chart Types
 export type ChartType = 'line' | 'ohlc';
 
+// View Types
+export type ViewType = 'charts' | 'pairs-table';
+
+// Pairs-Exchanges Data Types
+export interface PairsExchangesResponse {
+  [pairSymbol: string]: string[];
+}
+
 // UI Types
 export interface SelectOption {
   id: string;
@@ -83,4 +91,5 @@ export interface AppState {
   selectedTimeRange: string;
   selectedPair: string;
   chartType: ChartType;
+  currentView: ViewType;
 }

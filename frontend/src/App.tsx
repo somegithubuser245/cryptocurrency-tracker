@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import "./App.css";
 import { useConfigData } from "./hooks/useConfigData";
 import { useChartData } from "./hooks/useChartData";
+import { usePairsData } from "./hooks/usePairsData";
 import { useAppState } from "./hooks/useAppState";
 import Navigation from "./components/Navigation";
 import ControlsBar from "./components/ControlsBar";
 import ChartsContainer from "./components/ChartsContainer";
 import CombinedLineChart from "./components/CombinedLineChart";
+import PairsTable from "./components/PairsTable";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorMessage from "./components/ErrorMessage";
 
@@ -18,6 +20,14 @@ function App() {
     loading: configLoading,
     error: configError,
   } = useConfigData();
+
+  const {
+    pairsData,
+    loading: pairsLoading,
+    error: pairsError,
+    refetch: refetchPairs,
+  } = usePairsData();
+
   const {
     data: chartData,
     lineData,
@@ -100,62 +110,79 @@ function App() {
       <Navigation
         currentChartType={state.chartType}
         onChartTypeChange={(chartType) => updateState({ chartType })}
+        currentView={state.currentView}
+        onViewChange={(currentView) => updateState({ currentView })}
       />
 
-      <ControlsBar
-        exchanges={exchanges}
-        timeRanges={timeRanges}
-        pairs={pairs}
-        state={state}
-        onStateChange={updateState}
-        disabled={chartLoading}
-      />
-
-      {chartLoading && <LoadingSpinner message="Loading chart data..." />}
-
-      {chartError && (
-        <ErrorMessage error={chartError} onRetry={handleRetryChart} />
+      {/* Show Pairs Table View */}
+      {state.currentView === "pairs-table" && (
+        <PairsTable
+          pairsData={pairsData}
+          loading={pairsLoading}
+          error={pairsError}
+          onRetry={refetchPairs}
+        />
       )}
 
-      {/* Show line chart */}
-      {state.chartType === "line" &&
-        lineData &&
-        !chartLoading &&
-        !chartError && (
-          <div style={{ padding: "20px" }}>
-            <CombinedLineChart
-              data1={lineData[state.selectedExchange1] || []}
-              data2={lineData[state.selectedExchange2] || []}
-              exchange1Name={
-                exchanges.find((e) => e.id === state.selectedExchange1)?.name ||
-                state.selectedExchange1
-              }
-              exchange2Name={
-                exchanges.find((e) => e.id === state.selectedExchange2)?.name ||
-                state.selectedExchange2
-              }
-              pairName={
-                pairs.find((p) => p.id === state.selectedPair)?.name ||
-                state.selectedPair
-              }
-            />
-          </div>
-        )}
-
-      {/* Show OHLC charts */}
-      {state.chartType === "ohlc" &&
-        chartData &&
-        !chartLoading &&
-        !chartError && (
-          <ChartsContainer
-            chartData={chartData}
+      {/* Show Charts View */}
+      {state.currentView === "charts" && (
+        <>
+          <ControlsBar
             exchanges={exchanges}
+            timeRanges={timeRanges}
             pairs={pairs}
-            selectedExchange1={state.selectedExchange1}
-            selectedExchange2={state.selectedExchange2}
-            selectedPair={state.selectedPair}
+            state={state}
+            onStateChange={updateState}
+            disabled={chartLoading}
           />
-        )}
+
+          {chartLoading && <LoadingSpinner message="Loading chart data..." />}
+
+          {chartError && (
+            <ErrorMessage error={chartError} onRetry={handleRetryChart} />
+          )}
+
+          {/* Show line chart */}
+          {state.chartType === "line" &&
+            lineData &&
+            !chartLoading &&
+            !chartError && (
+              <div style={{ padding: "20px" }}>
+                <CombinedLineChart
+                  data1={lineData[state.selectedExchange1] || []}
+                  data2={lineData[state.selectedExchange2] || []}
+                  exchange1Name={
+                    exchanges.find((e) => e.id === state.selectedExchange1)?.name ||
+                    state.selectedExchange1
+                  }
+                  exchange2Name={
+                    exchanges.find((e) => e.id === state.selectedExchange2)?.name ||
+                    state.selectedExchange2
+                  }
+                  pairName={
+                    pairs.find((p) => p.id === state.selectedPair)?.name ||
+                    state.selectedPair
+                  }
+                />
+              </div>
+            )}
+
+          {/* Show OHLC charts */}
+          {state.chartType === "ohlc" &&
+            chartData &&
+            !chartLoading &&
+            !chartError && (
+              <ChartsContainer
+                chartData={chartData}
+                exchanges={exchanges}
+                pairs={pairs}
+                selectedExchange1={state.selectedExchange1}
+                selectedExchange2={state.selectedExchange2}
+                selectedPair={state.selectedPair}
+              />
+            )}
+        </>
+      )}
     </div>
   );
 }
