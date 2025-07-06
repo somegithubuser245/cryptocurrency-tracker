@@ -335,6 +335,8 @@ pytest tests/ -v
 
 ## Contributing
 
+**see issues for more info**
+
 ### Priority Development Tasks
 
 1. **Spread Analysis Table (Frontend)**
