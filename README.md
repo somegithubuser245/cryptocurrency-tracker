@@ -191,7 +191,6 @@ Full API documentation is available at http://localhost:8000/docs when the backe
 ### ✅ Completed Features
 
 - [x] Multi-exchange OHLC data fetching via CCXT
-- [x] Redis-based caching system
 - [x] FastAPI backend with async processing
 - [x] React frontend with TypeScript
 - [x] Docker containerization
