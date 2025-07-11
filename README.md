@@ -38,7 +38,7 @@ A real-time cryptocurrency price visualization platform that displays OHLC (Open
 ### System Requirements
 - RAM: ~200MB for Docker containers
 - No API keys required
-- Default ports used:
+- Default ports are used:
   - Frontend: 5173 (Vite)
   - Backend: 8000 (Uvicorn)
   - Redis: 6379
@@ -55,9 +55,11 @@ cd cryptocurrency-tracker
 docker-compose up
 ```
 
+Refer to [DEVELOPMENT.md](docs/DEVELOPMENT.md) for a streamlined initial setup.
+
 The application will be available at http://localhost:5173
 
-You should see logs from frontend, backend and redis containers at startup.
+You should see logs from frontend, backend, and redis containers at startup.
 
 ### Local Development Setup
 

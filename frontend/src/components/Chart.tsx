@@ -5,6 +5,7 @@ import {
   ColorType,
   CandlestickSeries,
   Background,
+  Time,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 import type { KlineData } from "../types";
@@ -57,7 +58,7 @@ function Chart({ data, textColor, background }: ChartProps) {
     const candleStickSeries = chart.addSeries(CandlestickSeries);
     // Transform data to lightweight-charts format
     const transformedData = data.map((item) => ({
-      time: Math.floor(item.time) as any, // Convert to seconds and cast to Time type
+      time: Math.floor(item.time) as Time, // Convert to seconds and cast to Time type
       open: item.open,
       high: item.high,
       low: item.low,

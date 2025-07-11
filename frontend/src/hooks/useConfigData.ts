@@ -18,8 +18,10 @@ export const useConfigData = (): UseConfigData => {
 
     const fetchConfigData = async () => {
       try {
+        console.log('[Config] Loading configuration data...');
         setLoading(true);
         setError(null);
+        const startTime = performance.now();
 
         const [exchangesResponse, timeRangesResponse, pairsResponse] = await Promise.all([
           configApi.getExchanges(),
@@ -28,6 +30,9 @@ export const useConfigData = (): UseConfigData => {
         ]);
 
         if (!ignore) {
+          const loadTime = performance.now() - startTime;
+          console.log(`[Config] Config data loaded in ${loadTime.toFixed(2)}ms`);
+          
           setExchanges(transformConfigToOptions(exchangesResponse));
           setTimeRanges(transformConfigToOptions(timeRangesResponse));
           setPairs(transformConfigToOptions(pairsResponse));
@@ -35,7 +40,18 @@ export const useConfigData = (): UseConfigData => {
       } catch (err) {
         if (!ignore) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch configuration data';
-          setError(errorMessage);
+          
+          // Provide more helpful error messages
+          if (errorMessage.includes('timeout') || errorMessage.includes('Request timeout')) {
+            setError('Configuration loading timed out. The server may be busy loading cryptocurrency data. Please try again.');
+          } else if (errorMessage.includes('Network request failed') || errorMessage.includes('Failed to fetch')) {
+            setError('Network error. Please check your connection and try again.');
+          } else if (errorMessage.includes('HTTP 5')) {
+            setError('Server error. The cryptocurrency data service may be temporarily unavailable.');
+          } else {
+            setError(errorMessage);
+          }
+          
           console.error('Error fetching config data:', err);
         }
       } finally {

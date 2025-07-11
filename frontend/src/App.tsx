@@ -11,6 +11,7 @@ import CombinedLineChart from "./components/CombinedLineChart";
 import PairsTable from "./components/PairsTable";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorMessage from "./components/ErrorMessage";
+import DataSourceStatus from "./components/DataSourceStatus";
 
 function App() {
   const {
@@ -33,8 +34,10 @@ function App() {
     lineData,
     loading: chartLoading,
     error: chartError,
+    metadata: chartMetadata,
     fetchData: fetchChartData,
     fetchLineData: fetchLineChartData,
+    refreshData: refreshChartData,
   } = useChartData();
 
   const { state, updateState, initializeDefaults, isComplete } = useAppState({
@@ -49,6 +52,7 @@ function App() {
       initializeDefaults();
     }
   }, [configLoading, configError, initializeDefaults]);
+  
   // Fetch chart data when all selections are complete
   useEffect(() => {
     if (isComplete) {
@@ -79,6 +83,7 @@ function App() {
   const handleRetryConfig = () => {
     window.location.reload(); // Simple retry for config data
   };
+  
   const handleRetryChart = () => {
     if (isComplete) {
       const params = {
@@ -105,6 +110,7 @@ function App() {
   if (configError) {
     return <ErrorMessage error={configError} onRetry={handleRetryConfig} />;
   }
+  
   return (
     <div className="app">
       <Navigation
@@ -184,6 +190,15 @@ function App() {
               </div>
             )}
         </>
+      )}
+
+      {/* Data Source Status - shows when chart data is loaded */}
+      {(chartData || lineData) && !chartLoading && (
+        <DataSourceStatus
+          metadata={chartMetadata}
+          onRefreshRequest={refreshChartData}
+          autoRefreshInterval={300} // 5 minutes
+        />
       )}
     </div>
   );

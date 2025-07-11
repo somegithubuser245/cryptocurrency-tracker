@@ -66,6 +66,26 @@ export interface ChartCardProps {
   api_provider: string;
 }
 
+// Data Source Metadata Types
+export interface DataMetadata {
+  response_time_ms: number;
+  timestamp: number;
+  crypto_pair: string;
+  interval: string;
+  exchanges: {
+    [key: string]: {
+      source: string;
+      cache_age_seconds: number;
+      last_external_fetch: number;
+    };
+  };
+  data_points: {
+    [key: string]: number;
+  };
+  cache_ttl_seconds: number;
+  is_real_time: boolean;
+}
+
 // Hook Return Types
 export interface UseConfigData {
   exchanges: SelectOption[];
@@ -82,6 +102,11 @@ export interface UseChartData {
   error: string | null;
   fetchData: (params: CompareParams) => Promise<void>;
   fetchLineData: (params: CompareParams) => Promise<void>;
+}
+
+export interface UseChartDataExtended extends UseChartData {
+  metadata: DataMetadata | null;
+  refreshData: () => void;
 }
 
 // State Types

@@ -13,10 +13,9 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "24px",
-        gap: "16px",
+        padding: "40px 20px",
         backgroundColor: "var(--color-surface)",
-        border: "1px solid var(--color-error)",
+        border: "1px solid var(--color-border)",
         borderRadius: "var(--border-radius-lg)",
         margin: "20px",
         boxShadow: "var(--shadow)",
@@ -24,13 +23,14 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry }) => {
     >
       <div
         style={{
-          color: "var(--color-error)",
           fontSize: "48px",
-          marginBottom: "8px",
+          marginBottom: "16px",
+          color: "var(--color-error)",
         }}
       >
         ⚠️
       </div>
+      
       <div
         style={{
           color: "var(--color-error)",
@@ -41,18 +41,20 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ error, onRetry }) => {
       >
         Something went wrong
       </div>
+      
       <p 
         style={{ 
           color: "var(--color-text-secondary)", 
+          fontSize: "14px", 
           textAlign: "center", 
-          margin: 0,
-          fontSize: "14px",
-          lineHeight: "1.5",
-          maxWidth: "400px"
+          margin: "0 0 16px 0",
+          maxWidth: "400px",
+          lineHeight: "1.4",
         }}
       >
         {error}
       </p>
+      
       {onRetry && (
         <button
           onClick={onRetry}

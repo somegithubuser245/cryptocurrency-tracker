@@ -6,6 +6,8 @@ import {
   ColorType,
   LineStyle,
   LineSeries,
+  MouseEventParams,
+  Time,
 } from "lightweight-charts";
 import type { LineData } from "../types";
 import {
@@ -67,6 +69,7 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
       exchange2Value: data2.length > 0 ? data2[data2.length - 1].value : null,
     });
   }, [data1, data2]);
+  
   useEffect(() => {
     if (!containerRef.current || !data1.length || !data2.length) return;
 
@@ -101,7 +104,9 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
       height: 400,
     };
 
-    const chart = createChart(container, chartOptions); // Add first exchange line series
+    const chart = createChart(container, chartOptions);
+    
+    // Add first exchange line series
     const lineSeries1 = chart.addSeries(LineSeries, {
       color: "#2196F3",
       lineWidth: 2,
@@ -119,19 +124,19 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
 
     // Transform and set data
     const transformedData1 = data1.map((item) => ({
-      time: Math.floor(item.time) as any,
+      time: Math.floor(item.time) as Time,
       value: item.value,
     }));
 
     const transformedData2 = data2.map((item) => ({
-      time: Math.floor(item.time) as any,
+      time: Math.floor(item.time) as Time,
       value: item.value,
     }));
     lineSeries1.setData(transformedData1);
     lineSeries2.setData(transformedData2);
 
     // Subscribe to crosshair move for legend functionality
-    chart.subscribeCrosshairMove((param) => {
+    chart.subscribeCrosshairMove((param: MouseEventParams) => {
       if (!param.time) {
         // Reset to last values when not hovering
         setLegendValues({

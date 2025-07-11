@@ -5,13 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "build": "&& vite build",
+    "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "python ../run.py dev",
+    "start:local": "python ../run.py local",
+    "start:prod": "python ../run.py prod",
+    "build:watch": "python ../run.py build --watch",
+    "build:docker": "python ../run.py build --docker",
+    "build:docker-watch": "python ../run.py build --docker --watch",
+    "stop": "python ../run.py stop",
+    "status": "python ../run.py status",
+    "check": "python ../run.py --check"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "framer-motion": "^12.23.3",
     "lightweight-charts": "^5.0.3",
+    "lucide-react": "^0.525.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
