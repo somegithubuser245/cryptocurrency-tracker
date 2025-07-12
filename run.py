@@ -16,6 +16,9 @@ from typing import List, Optional
 import threading
 import platform
 
+# Import the build output processor helper
+from build_utils import BuildOutputProcessor
+
 class Colors:
     """ANSI color codes for cross-platform terminal output"""
     HEADER = '\033[95m'
@@ -36,6 +39,9 @@ class AppRunner:
         self.processes: List[subprocess.Popen] = []
         self.docker_compose_file = self.root_dir / "docker-compose.yml"
         self.is_windows = platform.system() == "Windows"
+        
+        # Initialize build output processor helper - ELIMINATES DUPLICATION
+        self.build_processor = BuildOutputProcessor()
         
     def log(self, message: str, level: str = "INFO"):
         """Colored logging output"""
@@ -265,7 +271,7 @@ class AppRunner:
             return self._build_frontend_local(watch)
     
     def _build_frontend_docker(self, watch=False):
-        """Build frontend using Docker"""
+        """Build frontend using Docker with helper - ELIMINATES DUPLICATION"""
         try:
             if watch:
                 # Run development mode with HMR through Docker
@@ -276,50 +282,16 @@ class AppRunner:
                 self.log("Building production frontend in Docker...", "INFO")
                 cmd = ["docker", "compose", "run", "--rm", "frontend", "npm", "run", "build"]
             
-            # Run command and capture output
-            process = subprocess.Popen(
-                cmd, 
-                cwd=self.root_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                universal_newlines=True
+            # Use helper to monitor build process - ELIMINATES DUPLICATION
+            process = self.build_processor.create_monitored_process(cmd, cwd=self.root_dir)
+            success, build_errors, build_warnings = self.build_processor.process_build_output(process)
+            
+            # Use helper to log results - ELIMINATES DUPLICATION
+            self.build_processor.log_build_results(
+                success, build_errors, build_warnings, "Docker frontend build"
             )
             
-            # Monitor output in real-time
-            build_errors = []
-            build_warnings = []
-            
-            for line in iter(process.stdout.readline, ''):
-                line = line.strip()
-                if line:
-                    print(line)  # Show real-time output
-                    
-                    # Check for errors and warnings
-                    line_lower = line.lower()
-                    if any(error_keyword in line_lower for error_keyword in ['error', 'failed', 'cannot', 'unable']):
-                        if 'warning' not in line_lower:
-                            build_errors.append(line)
-                    elif 'warning' in line_lower:
-                        build_warnings.append(line)
-            
-            process.wait()
-            
-            # Report results
-            if process.returncode == 0:
-                self.log("[SUCCESS] Docker frontend build completed successfully!", "SUCCESS")
-                if build_warnings:
-                    self.log(f"[WARN] {len(build_warnings)} warnings found:", "WARNING")
-                    for warning in build_warnings[:5]:  # Show first 5 warnings
-                        self.log(f"  {warning}", "WARNING")
-                return True
-            else:
-                self.log("[FAIL] Docker frontend build failed!", "ERROR")
-                if build_errors:
-                    self.log("Build errors found:", "ERROR")
-                    for error in build_errors:
-                        self.log(f"  {error}", "ERROR")
-                return False
+            return success
                 
         except subprocess.CalledProcessError as e:
             self.log(f"Docker frontend build failed: {e}", "ERROR")
@@ -329,7 +301,7 @@ class AppRunner:
             return False
     
     def _build_frontend_local(self, watch=False):
-        """Build frontend locally"""
+        """Build frontend locally with helper - ELIMINATES DUPLICATION"""
         try:
             # Install dependencies if needed
             if not (self.frontend_dir / "node_modules").exists():
@@ -362,49 +334,18 @@ class AppRunner:
                     self.cleanup()
                 return True
             else:
-                # For build mode, capture and analyze output
-                process = subprocess.Popen(
-                    build_cmd,
-                    cwd=self.frontend_dir,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    text=True,
-                    universal_newlines=True,
-                    shell=self.is_windows
+                # Use helper to monitor build process - ELIMINATES DUPLICATION
+                process = self.build_processor.create_monitored_process(
+                    build_cmd, cwd=self.frontend_dir, shell=self.is_windows
+                )
+                success, build_errors, build_warnings = self.build_processor.process_build_output(process)
+                
+                # Use helper to log results - ELIMINATES DUPLICATION
+                self.build_processor.log_build_results(
+                    success, build_errors, build_warnings, "Local frontend build"
                 )
                 
-                build_errors = []
-                build_warnings = []
-                
-                for line in iter(process.stdout.readline, ''):
-                    line = line.strip()
-                    if line:
-                        print(line)  # Show real-time output
-                        
-                        # Check for errors and warnings
-                        line_lower = line.lower()
-                        if any(error_keyword in line_lower for error_keyword in ['error', 'failed', 'cannot', 'unable']):
-                            if 'warning' not in line_lower:
-                                build_errors.append(line)
-                        elif 'warning' in line_lower:
-                            build_warnings.append(line)
-                
-                process.wait()
-                
-                if process.returncode == 0:
-                    self.log("[SUCCESS] Local frontend build completed successfully!", "SUCCESS")
-                    if build_warnings:
-                        self.log(f"[WARN] {len(build_warnings)} warnings found:", "WARNING")
-                        for warning in build_warnings[:5]:
-                            self.log(f"  {warning}", "WARNING")
-                    return True
-                else:
-                    self.log("[FAIL] Local frontend build failed!", "ERROR")
-                    if build_errors:
-                        self.log("Build errors found:", "ERROR")
-                        for error in build_errors:
-                            self.log(f"  {error}", "ERROR")
-                    return False
+                return success
             
         except subprocess.CalledProcessError as e:
             self.log(f"Local frontend build failed: {e}", "ERROR")

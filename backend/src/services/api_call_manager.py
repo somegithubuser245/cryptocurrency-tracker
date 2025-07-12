@@ -9,6 +9,7 @@ from ..routes.models.schemas import CompareRequest, PriceTicketRequest
 from .caching import Cacher
 from .external_api_caller import CryptoFetcher
 from ..utils.timeframes_equalizer import Equalizer
+from ..utils.data_processor import DataProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class ApiCallManager:
         self.equalizer = Equalizer()
         self.redis_cacher = Cacher()
         self.fetcher = CryptoFetcher()
+        self.data_processor = DataProcessor(self.equalizer)  # Add data processor helper
         
         # In-memory cache for very recent requests (faster than Redis)
         self._memory_cache: Dict[str, Dict] = {}
@@ -56,31 +58,19 @@ class ApiCallManager:
                 logger.warning("Some data sets are empty, using fallback")
                 data_sets_raw = await self._get_fallback_data(requests)
             
-            # Process data based on type
-            column_names = list(self.equalizer.cnames)
-            columns_to_drop = column_names[-1] if ticker_type == TickerType.OHLC else column_names[2:]
-            
-            eq_data_exchange1, eq_data_exchange2 = self.equalizer.equalize_timeframes(
-                data_sets_raw[0], data_sets_raw[1], columns_to_drop
+            # Use helper to process data - ELIMINATES DUPLICATION
+            eq_data_exchange1, eq_data_exchange2, response_time = self.data_processor.process_chart_data(
+                data_sets_raw, ticker_type, request, start_time
             )
             
-            response_time = time.time() - start_time
-            logger.info(f"Chart data served in {response_time:.2f}s for {request.crypto_id}")
-            
-            return {
-                request.exchange1.value: eq_data_exchange1,
-                request.exchange2.value: eq_data_exchange2,
-            }
+            # Use helper to create response - ELIMINATES DUPLICATION  
+            return self.data_processor.create_success_response(
+                eq_data_exchange1, eq_data_exchange2, request
+            )
             
         except Exception as e:
-            response_time = time.time() - start_time
-            logger.error(f"Error getting chart data after {response_time:.2f}s: {e}")
-            
-            # Return empty data structure instead of crashing
-            return {
-                request.exchange1.value: [],
-                request.exchange2.value: [],
-            }
+            # Use helper for error response - ELIMINATES DUPLICATION
+            return self.data_processor.create_error_response(request, start_time, e)
 
     async def get_timeframe_aligned_with_metadata(
         self, request: CompareRequest, ticker_type: TickerType
@@ -162,60 +152,24 @@ class ApiCallManager:
                         "last_external_fetch": time.time(),
                     }
             
-            # Process data based on type
-            column_names = list(self.equalizer.cnames)
-            columns_to_drop = column_names[-1] if ticker_type == TickerType.OHLC else column_names[2:]
-            
-            eq_data_exchange1, eq_data_exchange2 = self.equalizer.equalize_timeframes(
-                data_sets_raw[0], data_sets_raw[1], columns_to_drop
+            # Use helper to process data - ELIMINATES DUPLICATION
+            eq_data_exchange1, eq_data_exchange2, response_time = self.data_processor.process_chart_data(
+                data_sets_raw, ticker_type, request, start_time
             )
             
-            response_time = time.time() - start_time
-            logger.info(f"Chart data served in {response_time:.2f}s for {request.crypto_id}")
+            # Get cache TTL for metadata
+            cache_ttl_seconds = self._get_cache_ttl(request.interval)
             
-            # Prepare response with metadata
-            return {
-                "data": {
-                    request.exchange1.value: eq_data_exchange1,
-                    request.exchange2.value: eq_data_exchange2,
-                },
-                "metadata": {
-                    "response_time_ms": round(response_time * 1000, 2),
-                    "timestamp": time.time(),
-                    "crypto_pair": request.crypto_id,
-                    "interval": request.interval,
-                    "exchanges": {
-                        request.exchange1.value: cache_info.get(request.exchange1.value, {}),
-                        request.exchange2.value: cache_info.get(request.exchange2.value, {}),
-                    },
-                    "data_points": {
-                        request.exchange1.value: len(eq_data_exchange1),
-                        request.exchange2.value: len(eq_data_exchange2),
-                    },
-                    "cache_ttl_seconds": self._get_cache_ttl(request.interval),
-                    "is_real_time": True,  # Always true since we use real cryptocurrency APIs
-                }
-            }
+            # Use helper to create metadata response - ELIMINATES DUPLICATION
+            return self.data_processor.create_metadata_response(
+                eq_data_exchange1, eq_data_exchange2, request, response_time, 
+                cache_info, cache_ttl_seconds
+            )
             
         except Exception as e:
             response_time = time.time() - start_time
-            logger.error(f"Error getting chart data after {response_time:.2f}s: {e}")
-            
-            # Return error response with metadata
-            return {
-                "data": {
-                    request.exchange1.value: [],
-                    request.exchange2.value: [],
-                },
-                "metadata": {
-                    "response_time_ms": round(response_time * 1000, 2),
-                    "timestamp": time.time(),
-                    "error": str(e),
-                    "crypto_pair": request.crypto_id,
-                    "interval": request.interval,
-                    "is_real_time": True,
-                }
-            }
+            # Use helper for metadata error response - ELIMINATES DUPLICATION
+            return self.data_processor.create_metadata_error_response(request, response_time, e)
 
     async def _get_cached_data_parallel(self, requests: List[PriceTicketRequest]) -> List[List]:
         """
