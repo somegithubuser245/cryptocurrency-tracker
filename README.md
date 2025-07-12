@@ -99,6 +99,8 @@ cd cryptocurrency-tracker
 docker-compose up --build
 ```
 
+Or consult [DEVELOPMENT.md](docs/DEVELOPMENT.md) for a quick start.
+
 3. Access the application
 
 - **Frontend**: http://localhost:5173
