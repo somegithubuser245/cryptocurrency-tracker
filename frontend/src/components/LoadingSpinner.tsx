@@ -14,21 +14,31 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
-        gap: "10px",
+        padding: "40px 20px",
+        gap: "16px",
+        minHeight: "200px",
       }}
     >
       <div
         style={{
-          border: "4px solid #f3f3f3",
-          borderTop: "4px solid #3498db",
+          border: "3px solid var(--color-surface-light)",
+          borderTop: "3px solid var(--color-primary)",
           borderRadius: "50%",
-          width: "40px",
-          height: "40px",
+          width: "48px",
+          height: "48px",
           animation: "spin 1s linear infinite",
         }}
       />
-      <p>{message}</p>
+      <p 
+        style={{ 
+          margin: 0,
+          color: "var(--color-text-secondary)",
+          fontSize: "14px",
+          fontWeight: "500"
+        }}
+      >
+        {message}
+      </p>
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }

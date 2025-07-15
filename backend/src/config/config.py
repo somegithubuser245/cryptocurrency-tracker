@@ -1,81 +1,94 @@
 import logging
-from enum import Enum, StrEnum, auto
+from enum import Enum
 
 from pydantic_settings import BaseSettings
 
-# most straightforward way to show logs in uvicorn
-logger = logging.getLogger("uvicorn.error")
 
-
-class Settings(BaseSettings):
-    """This is a pydantic settings class
-    You can define your own .env
-    If not, pydantic defaults
-    to values defined here"""
-
+class ConfigSettings(BaseSettings):
+    api_key: str = ""
+    exchanges: list[str] = []
+    
+    # Redis configuration  
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
 
+    def __init__(self):
+        super().__init__()
 
-settings = Settings()
+
+settings = ConfigSettings()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
-CACHE_TTL_CONFIG: dict = {
-    "5m": 300,
-    "30m": 1800,
-    "1h": 3600,
-    "4h": 14400,
-    "1d": 86400,
-    "1w": 604800,
-    "1M": 604800,
-}
+class AppInfo:
+    """
+    Application-wide configuration
+    """
+
+    def __init__(self):
+        self.name = "Crypto-Arbitrage-Backend"
+        self.debug = False
+        self.env = "dev"
+
+
+APP_INFO = AppInfo()
+
+# Exchange Configuration
+
+logger = logging.getLogger(__name__)
 
 
 class Exchange(str, Enum):
     BINANCE = "binance"
+    COINBASE = "coinbase"
+    KUCOIN = "kucoin"
+    KRAKEN = "kraken"
+    BITFINEX = "bitfinex"
+    HUOBI = "huobi"
     OKX = "okx"
+    GATE = "gate"
     BYBIT = "bybit"
-    MEXC = "mexc"
-    BINGX = "bingx"
-    GATEIO = "gateio"
     KUCION = "kucoin"
 
 
-class TickerType(StrEnum):
-    OHLC = auto()
-    CHART_LINE = auto()
+# Python 3.11 compatible StrEnum alternative
+class TickerType(str, Enum):
+    OHLC = "ohlc"
+    CHART_LINE = "chart_line"
 
 
 SUPPORTED_EXCHANGES: dict = {entry: entry.value for entry in Exchange}
 
-# used for frontend
-TIME_RANGES: dict = {
-    "5m": "5 minutes",
-    "30m": "30 minutes",
-    "1h": "Hourly",
-    "4h": "4 Hours",
-    "1d": "Daily",
-    "1w": "Weekly",
-    "1M": "Monthly",
+# Cryptocurrency pairs configuration
+SUPPORTED_PAIRS: dict = {
+    "BTC/USD": "Bitcoin to USD",
+    "ETH/USD": "Ethereum to USD", 
+    "BTC/EUR": "Bitcoin to EUR",
+    "ETH/EUR": "Ethereum to EUR",
+    "ADA/USD": "Cardano to USD",
+    "DOT/USD": "Polkadot to USD",
+    "LINK/USD": "Chainlink to USD",
+    "UNI/USD": "Uniswap to USD",
+    "AAVE/USD": "Aave to USD",
+    "SUSHI/USD": "SushiSwap to USD",
+    "BTC/ETH": "Bitcoin to Ethereum",
+    "ETH/BTC": "Ethereum to Bitcoin",
 }
 
-SUPPORTED_PAIRS: dict = {
-    "BTC-USDT": "Bitcoin",
-    "ETH-USDT": "Ethereum",
-    "SOL-USDT": "Solana",
-    "ADA-USDT": "Cardano",
-    "AVAX-USDT": "Avalanche",
-    "DOT-USDT": "Polkadot",
-    "DOGE-USDT": "Dogecoin",
-    "SHIB-USDT": "Shiba Inu",
-    "LTC-USDT": "Litecoin",
-    "BCH-USDT": "Bitcoin Cash",
-    "ETC-USDT": "Ethereum Classic",
-    "XRP-USDT": "Ripple",
-    "TRX-USDT": "Tron",
-    "LINK-USDT": "Chainlink",
-    "UNI-USDT": "Uniswap",
-    "AAVE-USDT": "Aave",
-    "XEM-USDT": "XEM",
+# Time ranges configuration
+TIME_RANGES: dict = {
+    "1m": "1 Minute",
+    "5m": "5 Minutes", 
+    "15m": "15 Minutes",
+    "30m": "30 Minutes",
+    "1h": "1 Hour",
+    "4h": "4 Hours",
+    "1d": "1 Day",
+    "1w": "1 Week"
 }

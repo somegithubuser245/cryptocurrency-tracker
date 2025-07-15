@@ -6,12 +6,15 @@ import {
   ColorType,
   LineStyle,
   LineSeries,
+  MouseEventParams,
+  Time,
 } from "lightweight-charts";
 import type { LineData } from "../types";
 import {
   formatCryptoPrice,
   createSmartPriceFormatter,
 } from "../utils/priceFormatter";
+import { setupChartHandlers, createBaseChartOptions, CHART_DEFAULTS } from "../utils/chartUtils";
 
 interface CombinedLineChartProps {
   data1: LineData[];
@@ -67,6 +70,7 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
       exchange2Value: data2.length > 0 ? data2[data2.length - 1].value : null,
     });
   }, [data1, data2]);
+  
   useEffect(() => {
     if (!containerRef.current || !data1.length || !data2.length) return;
 
@@ -79,31 +83,27 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
     ];
     const smartFormatter = createSmartPriceFormatter(allPrices);
 
+    // Use helper for base options and customize for line chart
+    const baseOptions = createBaseChartOptions(false); // Light mode for line charts
     const chartOptions: DeepPartial<ChartOptions> = {
+      ...baseOptions,
       layout: {
-        textColor: "#333",
-        background: { type: ColorType.Solid, color: "#ffffff" },
-        fontFamily: "'Roboto', sans-serif",
-        fontSize: 14,
-      },
-      grid: {
-        vertLines: { color: "#f0f0f0" },
-        horzLines: { color: "#f0f0f0" },
-      },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
+        ...baseOptions.layout,
+        textColor: CHART_DEFAULTS.COLORS.TEXT_LIGHT,
+        background: { type: ColorType.Solid, color: CHART_DEFAULTS.COLORS.BACKGROUND_LIGHT },
       },
       localization: {
         priceFormatter: smartFormatter,
       },
       width: container.getBoundingClientRect().width,
-      height: 400,
+      height: CHART_DEFAULTS.SIZES.DEFAULT_HEIGHT,
     };
 
-    const chart = createChart(container, chartOptions); // Add first exchange line series
+    const chart = createChart(container, chartOptions);
+    
+    // Add first exchange line series
     const lineSeries1 = chart.addSeries(LineSeries, {
-      color: "#2196F3",
+      color: CHART_DEFAULTS.COLORS.LINE_BLUE,
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       title: exchange1Name,
@@ -111,7 +111,7 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
 
     // Add second exchange line series
     const lineSeries2 = chart.addSeries(LineSeries, {
-      color: "#FF9800",
+      color: CHART_DEFAULTS.COLORS.LINE_ORANGE,
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       title: exchange2Name,
@@ -119,19 +119,20 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
 
     // Transform and set data
     const transformedData1 = data1.map((item) => ({
-      time: Math.floor(item.time) as any,
+      time: Math.floor(item.time) as Time,
       value: item.value,
     }));
 
     const transformedData2 = data2.map((item) => ({
-      time: Math.floor(item.time) as any,
+      time: Math.floor(item.time) as Time,
       value: item.value,
     }));
+    
     lineSeries1.setData(transformedData1);
     lineSeries2.setData(transformedData2);
 
     // Subscribe to crosshair move for legend functionality
-    chart.subscribeCrosshairMove((param) => {
+    chart.subscribeCrosshairMove((param: MouseEventParams) => {
       if (!param.time) {
         // Reset to last values when not hovering
         setLegendValues({
@@ -154,19 +155,11 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
       });
     });
 
-    const handleResize = () => {
-      if (container) {
-        chart.applyOptions({ width: container.getBoundingClientRect().width });
-      }
-    };
+    // Use helper for chart handlers - ELIMINATES DUPLICATION
+    const { cleanup } = setupChartHandlers(chart, container);
 
-    chart.timeScale().fitContent();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      chart.remove();
-    };
+    // Return cleanup function
+    return cleanup;
   }, [data1, data2, exchange1Name, exchange2Name]);
 
   return (
@@ -186,7 +179,7 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
               style={{
                 width: "12px",
                 height: "2px",
-                backgroundColor: "#2196F3",
+                backgroundColor: CHART_DEFAULTS.COLORS.LINE_BLUE,
               }}
             />{" "}
             {exchange1Name}:{" "}
@@ -201,7 +194,7 @@ const CombinedLineChart: React.FC<CombinedLineChartProps> = ({
               style={{
                 width: "12px",
                 height: "2px",
-                backgroundColor: "#FF9800",
+                backgroundColor: CHART_DEFAULTS.COLORS.LINE_ORANGE,
               }}
             />
             {exchange2Name}:{" "}

@@ -38,6 +38,14 @@ export interface BackendLineData {
 // Chart Types
 export type ChartType = 'line' | 'ohlc';
 
+// View Types
+export type ViewType = 'charts' | 'pairs-table';
+
+// Pairs-Exchanges Data Types
+export interface PairsExchangesResponse {
+  [pairSymbol: string]: string[];
+}
+
 // UI Types
 export interface SelectOption {
   id: string;
@@ -58,6 +66,26 @@ export interface ChartCardProps {
   api_provider: string;
 }
 
+// Data Source Metadata Types
+export interface DataMetadata {
+  response_time_ms: number;
+  timestamp: number;
+  crypto_pair: string;
+  interval: string;
+  exchanges: {
+    [key: string]: {
+      source: string;
+      cache_age_seconds: number;
+      last_external_fetch: number;
+    };
+  };
+  data_points: {
+    [key: string]: number;
+  };
+  cache_ttl_seconds: number;
+  is_real_time: boolean;
+}
+
 // Hook Return Types
 export interface UseConfigData {
   exchanges: SelectOption[];
@@ -76,6 +104,11 @@ export interface UseChartData {
   fetchLineData: (params: CompareParams) => Promise<void>;
 }
 
+export interface UseChartDataExtended extends UseChartData {
+  metadata: DataMetadata | null;
+  refreshData: () => void;
+}
+
 // State Types
 export interface AppState {
   selectedExchange1: string;
@@ -83,4 +116,5 @@ export interface AppState {
   selectedTimeRange: string;
   selectedPair: string;
   chartType: ChartType;
+  currentView: ViewType;
 }
