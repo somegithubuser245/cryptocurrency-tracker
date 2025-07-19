@@ -1,0 +1,3 @@
+[submodule "wiki"]
+	path = wiki
+	url = git@github.com:somegithubuser245/cryptocurrency-tracker.wiki.git
