@@ -1,4 +1,4 @@
-from config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
+from ...config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
 from pydantic import BaseModel
 
 config_types: dict[str, dict] = {

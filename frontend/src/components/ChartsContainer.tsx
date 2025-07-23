@@ -28,15 +28,7 @@ const ChartsContainer: React.FC<ChartsContainerProps> = ({
   };
 
   return (
-    <div
-      className="charts-container"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        padding: "20px",
-      }}
-    >
+    <div className="charts-container">
       <ChartCard
         title={`${getExchangeName(selectedExchange1)} - ${getPairName(
           selectedPair
