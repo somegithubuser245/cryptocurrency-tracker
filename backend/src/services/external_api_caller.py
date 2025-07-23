@@ -1,6 +1,8 @@
 import asyncio
 
 import ccxt.async_support as ccxt
+import pandas as pd
+import numpy as np
 from config.config import SUPPORTED_EXCHANGES
 from routes.models.schemas import PriceTicketRequest
 
@@ -42,25 +44,28 @@ class CryptoFetcher:
         # load markets to be able to access .symbols of each exchange
         await asyncio.gather(*[exchange.load_markets() for exchange in exchanges])
 
-        # TODO: use pandas for quicker data preprocessing
-        all_symbols = [symbol for exchange in exchanges for symbol in exchange.symbols]
-        unique_symbols = list(set(all_symbols))
-        arbitrable_symbols = sorted(
-            [symbol for symbol in unique_symbols if all_symbols.count(symbol) > 1]
-        )
+        symbols_frames_raw = [
+            pd.DataFrame({exchange.id: exchange.symbols}) for exchange in exchanges
+        ]
 
-        pairs_exchanges_dict: dict[str, list[str]] = {}
-        for symbol in arbitrable_symbols:
-            for exchange in exchanges:
-                exchange_name = exchange.id
-                if symbol not in exchange.symbols:
-                    continue
-                if pairs_exchanges_dict.get(symbol):
-                    pairs_exchanges_dict[symbol].append(exchange_name)
-                else:
-                    pairs_exchanges_dict[symbol] = [exchange_name]
+        left_merge_frame = symbols_frames_raw[0]
 
-        return pairs_exchanges_dict
+        for right_merge_frame in symbols_frames_raw[1:]:
+            left_name = left_merge_frame.columns[-1]
+            right_name = right_merge_frame.columns[0]
+
+            left_merge_frame = left_merge_frame.merge(
+                right_merge_frame,
+                how="outer",
+                left_on=left_name,
+                right_on=right_name,
+            )
+
+            print(left_merge_frame.dropna().head())
+
+        print(left_merge_frame.transpose())
+
+        return {}
 
     def get_saved_exchange(self, exchange: str) -> ccxt.Exchange:
         if exchange not in self._exchanges:

@@ -1,11 +1,19 @@
+# server / fastapi
+asyncio
 uvicorn
 fastapi
-httpx
+websockets
 redis
 pydantic
 pydantic-settings
 pytest
 python-dotenv
-websockets
+
+# protocols i guess
+httpx
+
+
+# backend data handling
 pandas
+numpy
 ccxt
