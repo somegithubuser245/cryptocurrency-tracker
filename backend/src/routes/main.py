@@ -3,11 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.crypto_data import crypto_router
 from routes.static_data import static_router
-from services.api_call_manager import ApiCallManager
 
 # Setup
 app = FastAPI()
-api_call_manager = ApiCallManager()
 
 app.add_middleware(
     CORSMiddleware,

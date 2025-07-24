@@ -1,14 +1,17 @@
 import asyncio
+from functools import lru_cache
+from typing import Annotated
 
 from config.config import SUPPORTED_EXCHANGES, TickerType
 from data_handling.exchanges_symbols_converter import Converter
 from data_handling.timeframes_equalizer import Equalizer
+from fastapi import Depends
 from routes.models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
 
 
-class ApiCallManager:
+class ApiCallManager(object):
     """Main class that handles calls from FastAPI"""
 
     def __init__(self) -> None:
@@ -48,3 +51,12 @@ class ApiCallManager:
     async def get_arbitrable_pairs(self) -> dict[str, list[str]]:
         exchanges = await self.fetcher.get_exchanges_with_markets(SUPPORTED_EXCHANGES.values())
         return self.converter.get_list_like(exchanges)
+
+
+# Caches the instance and provides singletone pattern
+@lru_cache
+def get_api_call_manager() -> ApiCallManager:
+    return ApiCallManager()
+
+
+call_manager_dependency = Annotated[ApiCallManager, Depends(get_api_call_manager)]
