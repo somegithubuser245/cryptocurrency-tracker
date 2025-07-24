@@ -1,10 +1,10 @@
 import asyncio
 
 from config.config import TickerType
+from data_handling.timeframes_equalizer import Equalizer
 from routes.models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
-from utils.timeframes_equalizer import Equalizer
 
 
 class ApiCallManager:

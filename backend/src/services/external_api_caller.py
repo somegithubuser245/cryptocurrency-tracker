@@ -63,9 +63,14 @@ class CryptoFetcher:
 
             print(left_merge_frame.dropna().head())
 
-        print(left_merge_frame.transpose())
+        # drop only if found on single exchange
+        threshold = 2
+        left_merge_frame.dropna(thresh=threshold, inplace=True)
 
-        return {}
+        print(left_merge_frame.transpose())
+        return left_merge_frame.to_dict(
+            orient="index"
+        )
 
     def get_saved_exchange(self, exchange: str) -> ccxt.Exchange:
         if exchange not in self._exchanges:
