@@ -16,6 +16,6 @@ async def get_klines_data(
 
 @crypto_router.get("/line-compare")
 async def get_both_charts(
-    request: CompareRequest = Query(),
+    request: CompareRequest = Query(),  # noqa: B008
 ) -> dict[str, list[dict[str, int | float]]]:
     return await api_call_manager.get_timeframe_aligned(request, "chart_line")

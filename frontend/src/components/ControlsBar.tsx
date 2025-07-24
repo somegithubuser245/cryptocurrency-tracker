@@ -23,14 +23,27 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
     <div
       className="controls-bar"
       style={{
-        padding: "20px",
-        borderBottom: "1px solid #ccc",
+        padding: "24px",
+        backgroundColor: "var(--color-surface)",
+        borderBottom: "1px solid var(--color-border)",
         display: "flex",
-        gap: "20px",
+        gap: "24px",
         alignItems: "center",
         flexWrap: "wrap",
+        margin: 0,
       }}
     >
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: "8px",
+        color: "var(--color-text-secondary)",
+        fontSize: "14px",
+        fontWeight: "500"
+      }}>
+        ⚙️ Configuration:
+      </div>
+      
       <Select
         label="Exchange 1"
         id="exchange1"
@@ -66,6 +79,19 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
         onChange={(value) => onStateChange({ selectedTimeRange: value })}
         disabled={disabled}
       />
+      
+      {disabled && (
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "8px",
+          color: "var(--color-text-secondary)",
+          fontSize: "12px",
+          fontStyle: "italic"
+        }}>
+          Loading...
+        </div>
+      )}
     </div>
   );
 };

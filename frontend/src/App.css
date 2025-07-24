@@ -1,17 +1,42 @@
-.chart-card {
-    padding: 20px;
-    border: 1px solid black;
-    border-radius: 20px;
-    margin: 10px;
-    background-color: azure;
+/* App-specific styles - most styles are now in index.css */
+
+/* Chart container styles */
+.charts-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
-.chart-card-top-bar {
-    display: flex;
-    flex-direction: row;
+/* Each chart card should take full width */
+.charts-container .chart-card {
+  width: 100%;
+  margin: 0; /* Remove margin since gap handles spacing */
 }
 
-.card-dropdown {
-    flex: 1;
-    align-self: flex-end;
+@media (max-width: 768px) {
+  .charts-container {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* Line chart container */
+.line-chart-container {
+  padding: 24px;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  margin: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow);
+  width: calc(100% - 32px); /* Account for margins */
+}
+
+@media (max-width: 768px) {
+  .line-chart-container {
+    margin: 8px;
+    padding: 16px;
+    width: calc(100% - 16px);
+  }
 }

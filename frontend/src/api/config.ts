@@ -13,6 +13,7 @@ export const API_CONFIG = {
 export const buildConfigUrl = (configType: string): string => 
   `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CONFIG}/${configType}`;
 
+
 export const buildOhlcCompareUrl = (params: {
   exchange1: string;
   exchange2: string;

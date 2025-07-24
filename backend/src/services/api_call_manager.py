@@ -1,10 +1,11 @@
 import asyncio
 
-from config.config import TickerType
+from config.config import SUPPORTED_EXCHANGES, TickerType
+from data_handling.exchanges_symbols_converter import Converter
+from data_handling.timeframes_equalizer import Equalizer
 from routes.models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
-from utils.timeframes_equalizer import Equalizer
 
 
 class ApiCallManager:
@@ -12,6 +13,7 @@ class ApiCallManager:
 
     def __init__(self) -> None:
         self.equalizer = Equalizer()
+        self.converter = Converter()
         self.redis_cacher = Cacher()
         self.fetcher = CryptoFetcher()
 
@@ -42,3 +44,7 @@ class ApiCallManager:
             request.exchange1.value: eq_data_exchange1,
             request.exchange2.value: eq_data_exchange2,
         }
+
+    async def get_arbitrable_pairs(self) -> dict[str, list[str]]:
+        exchanges = await self.fetcher.get_exchanges_with_markets(SUPPORTED_EXCHANGES.values())
+        return self.converter.get_list_like(exchanges)

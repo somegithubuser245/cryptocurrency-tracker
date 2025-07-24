@@ -1,6 +1,6 @@
 import { apiClient } from './client';
-import { buildConfigUrl, buildOhlcCompareUrl, buildLineCompareUrl } from './config';
-import type { ConfigResponse, ChartDataResponse, BackendLineDataResponse, CompareParams } from '../types';
+import { buildConfigUrl, buildOhlcCompareUrl, buildLineCompareUrl, API_CONFIG } from './config';
+import type { ConfigResponse, ChartDataResponse, BackendLineDataResponse, CompareParams, PairsExchangesResponse } from '../types';
 
 export const configApi = {
   async getExchanges(): Promise<ConfigResponse> {
@@ -13,6 +13,10 @@ export const configApi = {
 
   async getPairs(): Promise<ConfigResponse> {
     return apiClient.get<ConfigResponse>(buildConfigUrl('pairs'));
+  },
+
+  async getPairsExchanges(): Promise<PairsExchangesResponse> {
+    return apiClient.get<PairsExchangesResponse>(`${API_CONFIG.BASE_URL}/static/pairs-exchanges`);
   },
 };
 
