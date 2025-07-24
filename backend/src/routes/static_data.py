@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from routes.models.schemas import config_types
-from services.external_api_caller import CryptoFetcher
+from services.api_call_manager import ApiCallManager
 
-crypto_fetcher = CryptoFetcher()
+api_call_manager = ApiCallManager()
 
 static_router = APIRouter(prefix="/static")
 
@@ -14,4 +14,4 @@ def get_config(config_type: str) -> dict:
 
 @static_router.get("/pairs-exchanges")
 async def get_pairs_exchanges_dict() -> dict:
-    return await crypto_fetcher.get_arbitrable_pairs()
+    return await api_call_manager.get_arbitrable_pairs()
