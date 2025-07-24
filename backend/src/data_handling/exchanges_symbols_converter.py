@@ -8,7 +8,23 @@ class Converter:
         pass
 
     def get_list_like(self, exchanges: list[ccxt.Exchange]) -> dict[str, list[str]]:
-        converted: pd.DataFrame = self._convert_and_filter(exchanges)
+        """
+        Generate a dict for arbitrable pairs
+
+        Returns
+        ----
+        dictionary containing Pair as a key and list of Exchanges as a value
+
+        Example:
+        ```
+        {
+        "BTC-USDT": ["Binance", "okx", "mexc", "bingx"],
+        "DOGE-USDT": ["bingx", "okx"],
+        ...
+        }
+        ```
+        """
+        converted = self._convert_and_filter(exchanges)
         converted.fillna(False, inplace=True)
         supported_exchanges_list_like = converted.apply(
             # x[x] is equivalent to "select all x, where x is True"

@@ -1,9 +1,6 @@
 import asyncio
 
 import ccxt.async_support as ccxt
-import numpy as np
-import pandas as pd
-from config.config import SUPPORTED_EXCHANGES
 from routes.models.schemas import PriceTicketRequest
 
 
@@ -22,29 +19,16 @@ class CryptoFetcher:
             request.interval,
         )
 
-    async def get_exchanges(self) -> list[ccxt.Exchange]:
+    async def get_exchanges_with_markets(self, exchanges: list[str]) -> list[ccxt.Exchange]:
         """
-        Generate a dict for arbitrable pairs
-
-        Returns
-        ----
-        dictionary containing Pair as a key and list of Exchanges as a value
-
-        Example:
-        ```
-        {
-        "BTC-USDT": ["Binance", "okx", "mexc", "bingx"],
-        "DOGE-USDT": ["bingx", "okx"],
-        ...
-        }
-        ```
+        Get exchanges with markets loaded in async
         """
-        exchanges = [self._get_saved_exchange(exchange) for exchange in SUPPORTED_EXCHANGES.values()]
+        exchanges_loaded = [self._get_saved_exchange(exchange) for exchange in exchanges]
 
         # load markets to be able to access .symbols of each exchange
-        await asyncio.gather(*[exchange.load_markets() for exchange in exchanges])
+        await asyncio.gather(*[exchange.load_markets() for exchange in exchanges_loaded])
 
-        return exchanges
+        return exchanges_loaded
 
     def _get_saved_exchange(self, exchange: str) -> ccxt.Exchange:
         if exchange not in self._exchanges:
