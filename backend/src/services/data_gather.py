@@ -33,14 +33,13 @@ class DataManager:
             return ohlc_dict
         
         ticker_data_responses = await asyncio.gather(*[
-            self.fetcher.get_ohlc(request) for request in uncached_requests.values()
+            self.fetcher.get_ohlc(request) for request in uncached_requests
         ])
 
-        for index, uncached_ticker_entry in enumerate(uncached_requests.items()):
-            uncached_ticker_request_key, uncached_ticker_request = uncached_ticker_entry
-            
+        for index, uncached_ticker_request in enumerate(uncached_requests):
             data_response = ticker_data_responses[index]
-            ohlc_dict[uncached_ticker_request_key] = data_response
+            uncached_request_key = uncached_ticker_request.construct_key()
+            ohlc_dict[uncached_request_key] = data_response
             
             self.redis_cacher.set(
                 json.dumps(data_response),
@@ -53,18 +52,18 @@ class DataManager:
             self,
             ohlc_dict: dict,
             requests: list[PriceTicketRequest]
-    ) -> tuple[dict, dict[str, list[list[float]]]]:
+    ) -> tuple[list[PriceTicketRequest], dict[str, list[list[float]]]]:
         """
         Fill main dict with cached ticker data, if any found
         Otherwise, expand the list to fetch data for uncached ticker requests
         """
-        uncached = {}
+        uncached = []
         for ticker_request in requests:
             ticker_key = ticker_request.construct_key()
             cached = self.redis_cacher.get(ticker_request)
             
             if not cached:
-                uncached[ticker_key] = ticker_request
+                uncached.append(ticker_request)
                 continue
 
             ohlc_dict[ticker_key] = json.loads(cached)
