@@ -14,13 +14,13 @@ class DataManager:
     If not, it will make calls to fetch it
     """
     def __init__(self, redis_cacher: Cacher, fetcher: CryptoFetcher):
-        self.redis_cacher=redis_cacher
-        self.fetcher=fetcher
+        self.redis_cacher = redis_cacher
+        self.fetcher = fetcher
 
     async def get_ohlc_data_cached(self, requests: list[PriceTicketRequest]) -> list[list[list[float]]]:
         """
         This can be used in the future to implement batching-like data gathering
-        For now, this functions main puprose is to fetch data using async from
+        For now, this functions main purpose is to fetch data using async from
         two requests
         """
         ohlc_dict = {request.construct_key(): None for request in requests}
@@ -29,8 +29,8 @@ class DataManager:
             requests=requests
         )
         
-        if uncached_requests is None:
-            return ohlc_dict
+        if not uncached_requests:
+            return list(ohlc_dict.values())
         
         ticker_data_responses = await asyncio.gather(*[
             self.fetcher.get_ohlc(request) for request in uncached_requests
