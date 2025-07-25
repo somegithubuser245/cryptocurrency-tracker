@@ -1,7 +1,9 @@
 import asyncio
+import json
 
 import ccxt.async_support as ccxt
 from routes.models.schemas import PriceTicketRequest
+from services.caching import Cacher
 
 
 class CryptoFetcher:
@@ -14,6 +16,7 @@ class CryptoFetcher:
 
     async def get_ohlc(self, request: PriceTicketRequest) -> list[list[float]]:
         exchange = self._get_saved_exchange(request.api_provider.value)
+        
         return await exchange.fetch_ohlcv(
             request.crypto_id.replace("-", "/"),
             request.interval,
