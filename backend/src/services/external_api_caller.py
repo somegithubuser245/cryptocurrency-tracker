@@ -1,9 +1,7 @@
 import asyncio
-import json
 
 import ccxt.async_support as ccxt
 from routes.models.schemas import PriceTicketRequest
-from services.caching import Cacher
 
 
 class CryptoFetcher:
