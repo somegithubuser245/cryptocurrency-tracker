@@ -7,15 +7,33 @@ config_types: dict[str, dict] = {
     "exchanges": SUPPORTED_EXCHANGES,
 }
 
+class RedisCacheble(BaseModel):
+    def construct_key(self) -> str:
+        raise NotImplementedError
+    
+    def separate_strings_with_colons(self, *parameters: list[str]) -> str:
+        key = ""
+        for index, parameter in enumerate(parameters):
+            key += f"{parameter}:" if index < len(parameters) - 1 else parameter
+        return key
 
-class CompareRequest(BaseModel):
+
+class CompareRequest(RedisCacheble):
     exchange1: Exchange
     exchange2: Exchange
     crypto_id: str
     interval: str = "1h"
 
+    def construct_key(self):
+        return super().separate_strings_with_colons(
+            *self.model_dump().values()
+        )
 
-class PriceTicketRequest(BaseModel):
+
+class PriceTicketRequest(RedisCacheble):
     crypto_id: str
     interval: str = "1h"
     api_provider: Exchange
+
+    def construct_key(self):
+        return f"{self.api_provider}:{self.crypto_id}:{self.interval}"

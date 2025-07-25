@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 from routes.models.schemas import config_types
-from services.api_call_manager import ApiCallManager
-
-api_call_manager = ApiCallManager()
+from services.api_call_manager import call_manager_dependency
 
 static_router = APIRouter(prefix="/static")
 
@@ -13,5 +11,5 @@ def get_config(config_type: str) -> dict:
 
 
 @static_router.get("/pairs-exchanges")
-async def get_pairs_exchanges_dict() -> dict:
-    return await api_call_manager.get_arbitrable_pairs()
+async def get_pairs_exchanges_dict(call_manager: call_manager_dependency) -> dict:
+    return await call_manager.get_arbitrable_pairs()
