@@ -14,15 +14,17 @@ from services.external_api_caller import CryptoFetcher
 class ApiCallManager():
     """Main class that handles calls from FastAPI"""
 
-    def __init__(self) -> None:
-        self.equalizer = Equalizer()
-        self.converter = Converter()
-        self.fetcher = CryptoFetcher()
-        self.redis_cacher = Cacher()
-        self.data_manager = DataManager(
-            self.redis_cacher,
-            self.fetcher
-        )
+    def __init__(
+        self,
+        equalizer: Equalizer,
+        converter: Converter,
+        fetcher: CryptoFetcher,
+        data_manager: DataManager
+    ) -> None:
+        self.equalizer = equalizer
+        self.converter = converter
+        self.fetcher = fetcher
+        self.data_manager = data_manager
 
     async def get_timeframe_aligned(
         self, request: CompareRequest, type: TickerType
@@ -53,12 +55,3 @@ class ApiCallManager():
     async def get_arbitrable_pairs(self) -> dict[str, list[str]]:
         exchanges = await self.fetcher.get_exchanges_with_markets(SUPPORTED_EXCHANGES.values())
         return self.converter.get_list_like(exchanges)
-
-
-# Caches the instance and provides singletone pattern
-@lru_cache
-def get_api_call_manager() -> ApiCallManager:
-    return ApiCallManager()
-
-
-call_manager_dependency = Annotated[ApiCallManager, Depends(get_api_call_manager)]
