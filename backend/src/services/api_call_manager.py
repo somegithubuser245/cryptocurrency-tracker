@@ -1,10 +1,6 @@
-from functools import lru_cache
-from typing import Annotated
-
 from config.config import SUPPORTED_EXCHANGES, TickerType
 from data_handling.exchanges_symbols_converter import Converter
 from data_handling.timeframes_equalizer import Equalizer
-from fastapi import Depends
 from routes.models.schemas import CompareRequest, PriceTicketRequest
 from services.caching import Cacher
 from services.data_gather import DataManager

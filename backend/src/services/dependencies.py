@@ -9,6 +9,7 @@ from services.api_call_manager import ApiCallManager
 from services.caching import Cacher
 from services.data_gather import DataManager
 from services.external_api_caller import CryptoFetcher
+from services.spread_calculator import SpreadCalculator
 
 @lru_cache()
 def get_cacher() -> Cacher:
@@ -19,9 +20,8 @@ def get_crypto_fetcher() -> CryptoFetcher:
     return CryptoFetcher()
 
 @lru_cache()
-def get_converter(fetcher: CryptoFetcher = Depends(get_crypto_fetcher)) -> Converter:
-    # Note: min_exchanges_available is now configurable
-    return Converter(fetcher=fetcher)
+def get_converter() -> Converter:
+    return Converter()
 
 @lru_cache()
 def get_equalizer() -> Equalizer:
@@ -31,8 +31,16 @@ def get_equalizer() -> Equalizer:
 def get_data_manager(
     fetcher: CryptoFetcher = Depends(get_crypto_fetcher),
     cacher: Cacher = Depends(get_cacher),
+    converter: Converter = Depends(get_converter)
 ) -> DataManager:
-    return DataManager(fetcher=fetcher, cacher=cacher)
+    return DataManager(fetcher=fetcher, redis_cacher=cacher, converter=converter)
+
+@lru_cache()
+def get_spreads_calculator(
+    data_manager: DataManager = Depends(get_data_manager),
+    equalizer: Equalizer = Depends(get_equalizer)
+) -> SpreadCalculator:
+    return SpreadCalculator(data_manager=data_manager, equalizer=equalizer)
 
 
 @lru_cache()
@@ -54,3 +62,4 @@ def get_api_call_manager(
     )
 
 call_manager_dependency = Annotated[ApiCallManager, Depends(get_api_call_manager)]
+spreads_calculator_dependency = Annotated[SpreadCalculator, Depends(get_spreads_calculator)]

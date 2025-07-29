@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.crypto_data import crypto_router
 from routes.static_data import static_router
+from routes.scan_spreads import spreads_router
 
 import ccxt
 
@@ -19,6 +20,7 @@ app.add_middleware(
 
 app.include_router(static_router)
 app.include_router(crypto_router)
+app.include_router(spreads_router)
 
 
 @app.exception_handler(ValueError)

@@ -1,4 +1,6 @@
 
+from config.config import SUPPORTED_EXCHANGES
+from data_handling.exchanges_symbols_converter import Converter
 from routes.models.schemas import PriceTicketRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
@@ -13,9 +15,10 @@ class DataManager:
     If there's cache, it will return it
     If not, it will make calls to fetch it
     """
-    def __init__(self, redis_cacher: Cacher, fetcher: CryptoFetcher):
+    def __init__(self, redis_cacher: Cacher, fetcher: CryptoFetcher, converter: Converter):
         self.redis_cacher = redis_cacher
         self.fetcher = fetcher
+        self.converter = converter
 
     async def get_ohlc_data_cached(self, requests: list[PriceTicketRequest]) -> list[list[list[float]]]:
         """
@@ -69,3 +72,7 @@ class DataManager:
             ohlc_dict[ticker_key] = json.loads(cached)
 
         return uncached, ohlc_dict
+    
+    async def get_arbitrable_pairs(self) -> dict[str, list[str]]:
+        exchanges = await self.fetcher.get_exchanges_with_markets(SUPPORTED_EXCHANGES.values())
+        return self.converter.get_list_like(exchanges)
