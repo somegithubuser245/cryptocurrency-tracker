@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from data_handling.exchanges_symbols_converter import Converter
-from data_handling.timeframes_equalizer import Equalizer
+from data_handling.timeframes_equalizer import TimeframeSynchronizer
 from services.api_call_manager import ApiCallManager
 from services.caching import Cacher
 from services.data_gather import DataManager
@@ -24,8 +24,8 @@ def get_converter() -> Converter:
     return Converter()
 
 @lru_cache()
-def get_equalizer() -> Equalizer:
-    return Equalizer()
+def get_equalizer() -> TimeframeSynchronizer:
+    return TimeframeSynchronizer()
 
 @lru_cache()
 def get_data_manager(
@@ -38,9 +38,9 @@ def get_data_manager(
 @lru_cache()
 def get_spreads_calculator(
     data_manager: DataManager = Depends(get_data_manager),
-    equalizer: Equalizer = Depends(get_equalizer)
+    equalizer: TimeframeSynchronizer = Depends(get_equalizer)
 ) -> SpreadCalculator:
-    return SpreadCalculator(data_manager=data_manager, equalizer=equalizer)
+    return SpreadCalculator(data_manager=data_manager, timeframe_synchronizer=equalizer)
 
 
 @lru_cache()
@@ -48,7 +48,7 @@ def get_api_call_manager(
     fetcher: CryptoFetcher = Depends(get_crypto_fetcher),
     data_manager: DataManager = Depends(get_data_manager),
     converter: Converter = Depends(get_converter),
-    equalizer: Equalizer = Depends(get_equalizer),
+    equalizer: TimeframeSynchronizer = Depends(get_equalizer),
 ) -> ApiCallManager:
     """
     Provides an ApiCallManager instance with all its dependencies injected.

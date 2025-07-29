@@ -1,4 +1,6 @@
-from data_handling.timeframes_equalizer import Equalizer
+import pandas as pd
+
+from data_handling.timeframes_equalizer import TimeframeSynchronizer
 from routes.models.schemas import PriceTicketRequest
 from services.data_gather import DataManager
 
@@ -7,18 +9,27 @@ class SpreadCalculator:
     def __init__(
             self,
             data_manager: DataManager,
-            equalizer: Equalizer
+            timeframe_synchronizer: TimeframeSynchronizer
     ) -> None:
         self.data_manager = data_manager
-        self.equalizer = equalizer    
+        self.synchronizer = timeframe_synchronizer
+
+        self.cnames = ["time", "open", "high", "low", "close", "volume"]
 
     async def calculate(self, pair: PriceTicketRequest) -> dict:
         arbitrable_pairs = await self.data_manager.get_arbitrable_pairs()
         requests_list = self.generate_requests(pair, arbitrable_pairs)
-        ohlc_all_supported = await self.data_manager.get_ohlc_data_cached(requests_list)
-        return ohlc_all_supported
         
+        ohlc_all_supported = await self.data_manager.get_ohlc_data_cached(requests_list)
+        
+        aligned = self.synchronizer.sync_many(list(ohlc_all_supported.values()))
+        
+        # you can access each exchange's entries by specifying its name
+        # e.g. multiindex_ohlc["binance"]
+        multiindex_ohlc = pd.concat(aligned, keys=self.generate_exchange_names(requests_list)).stack()
 
+        return {}
+    
     def generate_requests(
         self,
         pair: PriceTicketRequest,
@@ -36,6 +47,12 @@ class SpreadCalculator:
         ]
 
         return requests_list
+    
+    def generate_exchange_names(
+        self,
+        reqeusts: list[PriceTicketRequest]
+    ) -> list[str]:
+        return [request.api_provider.value for request in reqeusts]
     
     
         

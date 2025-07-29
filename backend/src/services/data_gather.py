@@ -20,7 +20,7 @@ class DataManager:
         self.fetcher = fetcher
         self.converter = converter
 
-    async def get_ohlc_data_cached(self, requests: list[PriceTicketRequest]) -> list[list[list[float]]]:
+    async def get_ohlc_data_cached(self, requests: list[PriceTicketRequest]) -> dict[str, list[list[float]]]:
         """
         This can be used in the future to implement batching-like data gathering
         For now, this functions main purpose is to fetch data using async from
@@ -33,7 +33,7 @@ class DataManager:
         )
         
         if not uncached_requests:
-            return list(ohlc_dict.values())
+            return ohlc_dict
         
         ticker_data_responses = await asyncio.gather(*[
             self.fetcher.get_ohlc(request) for request in uncached_requests
@@ -49,7 +49,7 @@ class DataManager:
                 uncached_ticker_request,
                 300)
 
-        return list(ohlc_dict.values())
+        return ohlc_dict
 
     def _fill_with_cached_get_uncached(
             self,

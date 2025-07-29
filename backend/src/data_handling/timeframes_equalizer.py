@@ -1,11 +1,12 @@
 import pandas as pd
+from functools import reduce
 
 
-class Equalizer:
+class TimeframeSynchronizer:
     def __init__(self) -> None:
         self.cnames = ["time", "open", "high", "low", "close", "volume"]
 
-    def equalize_timeframes(
+    def sync_two(
         self,
         klines_data1: list[list[float]],
         klines_data2: list[list[float]],
@@ -27,6 +28,22 @@ class Equalizer:
         result2 = sorted2.reset_index().assign(time=lambda x: x["time"] / 1000).to_dict("records")
 
         return (result1, result2)
+    
+    def sync_many(
+        self,
+        ohlc_data_entries: list[list[list[float]]]
+    ) -> list[pd.DataFrame]:
+        dataframes_raw: list[pd.DataFrame] = []
+        for ohlc_entry in ohlc_data_entries:
+            df = pd.DataFrame(
+                ohlc_entry,
+                columns=self.cnames
+            ).set_index(self.cnames[0])
+            df.index = pd.to_datetime(df.index, unit="ms", origin="unix")
+            dataframes_raw.append(df)
 
-    def get_2d_names(self, cnames: list[str], appendix: str) -> list[str]:
-        return [cname + f"_{appendix}" for cname in cnames if cname != "volume"]
+        common_index = dataframes_raw[0].index
+        for df in dataframes_raw[1:]:
+            common_index = df.index.intersection(common_index)
+
+        return [df.loc[common_index] for df in dataframes_raw]
