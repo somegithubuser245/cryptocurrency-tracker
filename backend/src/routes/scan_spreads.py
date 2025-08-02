@@ -16,3 +16,10 @@ async def get_spreads(
             api_provider="binance"
         )
     )
+
+@spreads_router.post("/calculate")
+async def get_spreads(
+    spreads_calculator: spreads_calculator_dependency,
+    ticker: PriceTicketRequest
+):
+    return await spreads_calculator.calculate(ticker)
