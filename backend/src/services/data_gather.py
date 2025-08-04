@@ -1,7 +1,7 @@
 
 from config.config import SUPPORTED_EXCHANGES
 from data_handling.exchanges_symbols_converter import Converter
-from routes.models.schemas import PriceTicketRequest
+from routes.models.schemas import PriceTickerRequest
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
 
@@ -20,7 +20,7 @@ class DataManager:
         self.fetcher = fetcher
         self.converter = converter
 
-    async def get_ohlc_data_cached(self, requests: list[PriceTicketRequest]) -> dict[str, list[list[float]]]:
+    async def get_ohlc_data_cached(self, requests: list[PriceTickerRequest]) -> dict[str, list[list[float]]]:
         """
         This can be used in the future to implement batching-like data gathering
         For now, this functions main purpose is to fetch data using async from
@@ -54,8 +54,8 @@ class DataManager:
     def _fill_with_cached_get_uncached(
             self,
             ohlc_dict: dict,
-            requests: list[PriceTicketRequest]
-    ) -> tuple[list[PriceTicketRequest], dict[str, list[list[float]]]]:
+            requests: list[PriceTickerRequest]
+    ) -> tuple[list[PriceTickerRequest], dict[str, list[list[float]]]]:
         """
         Fill main dict with cached ticker data, if any found
         Otherwise, expand the list to fetch data for uncached ticker requests

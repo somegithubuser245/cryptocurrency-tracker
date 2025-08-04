@@ -25,8 +25,8 @@ app.include_router(spreads_router)
 
 @app.exception_handler(ValueError)
 async def validation_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
-    return JSONResponse(status_code=400, content={"detail": str(exc)})
+    return JSONResponse(status_code=400, content={"Some Value Error:": str(exc)})
 
 @app.exception_handler(ccxt.BaseError)
 async def ccxt_error(request: Request, exc: ccxt.BaseError) -> JSONResponse:
-    return JSONResponse(status_code=400, content={"detail": str(exc)})
+    return JSONResponse(status_code=400, content={"CCXT error:": str(exc)})

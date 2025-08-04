@@ -3,7 +3,7 @@ import logging
 from config.config import SUPPORTED_EXCHANGES, TickerType
 from data_handling.exchanges_symbols_converter import Converter
 from data_handling.timeframes_equalizer import TimeframeSynchronizer
-from routes.models.schemas import CompareRequest, PriceTicketRequest
+from routes.models.schemas import CompareRequest, PriceTickerRequest
 from services.caching import Cacher
 from services.data_gather import DataManager
 from services.external_api_caller import CryptoFetcher
@@ -31,7 +31,7 @@ class ApiCallManager():
         exchanges = [request.exchange1, request.exchange2]
 
         requests = [
-            PriceTicketRequest(
+            PriceTickerRequest(
                 crypto_id=request.crypto_id, interval=request.interval, api_provider=exchange
             )
             for exchange in exchanges

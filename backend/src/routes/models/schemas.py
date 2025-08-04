@@ -30,7 +30,7 @@ class CompareRequest(RedisCacheble):
         )
 
 
-class PriceTicketRequest(RedisCacheble):
+class PriceTickerRequest(RedisCacheble):
     crypto_id: str
     interval: str = "1h"
     api_provider: Exchange

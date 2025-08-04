@@ -1,7 +1,7 @@
 import asyncio
 
 import ccxt.async_support as ccxt
-from routes.models.schemas import PriceTicketRequest
+from routes.models.schemas import PriceTickerRequest
 
 
 class CryptoFetcher:
@@ -12,7 +12,7 @@ class CryptoFetcher:
     def __init__(self) -> None:
         self._exchanges: dict[str, ccxt.Exchange] = {}
 
-    async def get_ohlc(self, request: PriceTicketRequest) -> list[list[float]]:
+    async def get_ohlc(self, request: PriceTickerRequest) -> list[list[float]]:
         exchange = self._get_saved_exchange(request.api_provider.value)
         
         return await exchange.fetch_ohlcv(
