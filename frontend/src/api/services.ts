@@ -1,6 +1,15 @@
 import { apiClient } from './client';
 import { buildConfigUrl, buildOhlcCompareUrl, buildLineCompareUrl, API_CONFIG } from './config';
-import type { ConfigResponse, ChartDataResponse, BackendLineDataResponse, CompareParams, PairsExchangesResponse } from '../types';
+import type { 
+  ConfigResponse, 
+  ChartDataResponse, 
+  BackendLineDataResponse, 
+  CompareParams, 
+  PairsExchangesResponse,
+  MaxSpreadResponse,
+  AllSpreadsResponse,
+  SpreadRequest
+} from '../types';
 
 export const configApi = {
   async getExchanges(): Promise<ConfigResponse> {
@@ -28,5 +37,15 @@ export const chartApi = {
   async getLineCompareData(params: CompareParams): Promise<BackendLineDataResponse> {
     const url = buildLineCompareUrl(params);
     return apiClient.get<BackendLineDataResponse>(url);
+  },
+};
+
+export const spreadApi = {
+  async getMaxSpread(params: SpreadRequest): Promise<MaxSpreadResponse> {
+    return apiClient.post<MaxSpreadResponse>(`${API_CONFIG.BASE_URL}/spreads/per-ticker/max`, params);
+  },
+  
+  async getAllSpreads(params: SpreadRequest): Promise<AllSpreadsResponse> {
+    return apiClient.post<AllSpreadsResponse>(`${API_CONFIG.BASE_URL}/spreads/per-ticker/all`, params);
   },
 };

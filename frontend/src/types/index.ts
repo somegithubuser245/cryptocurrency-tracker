@@ -84,6 +84,30 @@ export interface UseChartData {
   fetchLineData: (params: CompareParams) => Promise<void>;
 }
 
+// Spread Types
+export interface MaxSpreadResponse {
+  time: string;
+  spread: number;
+  spread_percent: number;
+  high_exchange: string;
+  low_exchange: string;
+}
+
+export interface AllSpreadsResponse {
+  [timestamp: string]: {
+    spread: number;
+    spread_percent: number;
+    high_exchange: string;
+    low_exchange: string;
+  };
+}
+
+export interface SpreadRequest {
+  crypto_id: string;
+  interval: string;
+  api_provider: string;
+}
+
 // State Types
 export interface AppState {
   selectedExchange1: string;
