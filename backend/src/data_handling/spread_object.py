@@ -27,26 +27,12 @@ class Spread:
         )
 
     def _calculate_max_spread_per_row(self, x: pd.Series):
-        exchange_names = x.index.to_list()
-        name1 = exchange_names[0]
-        max_exchange_name, min_exchange_mane = name1, name1
-        
-        entry1 = x.iloc[0]
-        max, min = entry1, entry1
-        
-        for i in range(1, len(x)):
-            price_entry = x.iloc[i]
-            if price_entry < min:
-                min = price_entry
-                min_exchange_mane = exchange_names[i]
-
-            if price_entry > max:
-                max = price_entry
-                max_exchange_name = exchange_names[i]
+        max, min = x.max(), x.min()
+        max_exchange_name, min_exchange_name = x.idxmax(), x.idxmin()
     
         spread = max - min
         spread_percent = spread / ((max + min) / 2) * 100
-        return spread, spread_percent, max_exchange_name, min_exchange_mane
+        return spread, spread_percent, max_exchange_name, min_exchange_name
     
     # api-ready dicts
     def get_max_spread(self) -> dict:
