@@ -18,7 +18,6 @@ class Spread:
             # main function for calculation
             ["close"].apply(self._calculate_max_spread_per_row, axis=1)
         )
-        print(spreads_series)
 
         self.spreads_df = pd.DataFrame.from_records(
             data=spreads_series,

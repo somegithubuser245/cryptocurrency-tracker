@@ -1,66 +1,45 @@
-# Cryptocurrency Arbitrage Tracker
+# Cryptocurrency Historical Price Analyzer
 
-A real-time cryptocurrency arbitrage tracking platform that identifies and monitors price spreads across multiple exchanges. Built with FastAPI, React, CCXT, and Redis caching for high-performance cross-exchange analysis.
+A cryptocurrency analysis tool to fetch, compare, and visualize historical OHLC (Open, High, Low, Close) price data for trading pairs across multiple exchanges. This application provides a REST API backend built with FastAPI and a React-based frontend for data visualization.
 
-## Features
+This repository is tagged at `v0.1.0` to represent this initial version. Future development will focus on real-time analysis and automated trading strategies on a separate branch.
 
-- **Cross-Exchange Arbitrage Detection**: Monitor price spreads across 7+ cryptocurrency exchanges
-- **Real-Time Spread Analysis**: Live tracking of current price differences between exchange pairs
-- **Historical Max Spread Calculation**: 4-hour maximum spread tracking for better opportunity identification (in progress)
-- **Interactive Data Visualization**: Compare OHLC data across multiple exchanges simultaneously
-- **Multi-Exchange Support**: Binance, OKX, Bybit, MEXC, BingX, Gate.io, and KuCoin integration
-- **Comprehensive Pair Coverage**: Automatic discovery of supported trading pairs across all exchanges
+## Core Features (v0.1.0)
+
+- **Multi-Exchange Data Aggregation**: Fetches historical OHLC data from exchanges using the CCXT library (Currently: Binance, OKX, Bybit, MEXC, BingX, Gate.io, and KuCoin).
+- **Pair Price Comparison**: Compares the historical prices of a single trading pair across multiple exchanges to identify potential spread opportunities.
+- **Max Spread Calculation**: Analyzes historical data to find the maximum price spread between exchanges for a given pair.
+- **Interactive Data Visualization**: The frontend provides charts to visually compare OHLC data from different sources simultaneously.
+- **Dynamic Pair Discovery**: Automatically finds all tradable pairs supported by the integrated exchanges.
+- **Cached Responses**: Utilizes Redis to cache API responses for improved performance.
 
 ## Tech Stack
 
 ### Backend
 
-- **FastAPI**: High-performance async web framework
-- **CCXT**: Unified cryptocurrency exchange API integration
-- **Redis**: Advanced caching and data management
-- **Pandas**: Large-scale financial data processing and analysis
-- **Uvicorn**: Lightning-fast ASGI server
-- **Pytest**: Comprehensive testing framework
+- **FastAPI**: High-performance asynchronous web framework for the REST API.
+- **CCXT**: Unified library for cryptocurrency exchange API interaction.
+- **Redis**: In-memory data store used for caching.
+- **Pandas**: Data manipulation and analysis of OHLC data.
+- **Uvicorn**: Lightning-fast ASGI server.
 
 ### Frontend
 
-- **React with TypeScript**: Modern component-based UI
-- **TailwindCSS**: Utility-first styling framework
-- **Lightweight Charts**: Professional financial data visualization
-- **WebSocket Integration**: Real-time data streaming
+- **React with TypeScript**: Modern component-based UI.
+- **TailwindCSS**: Utility-first styling framework.
+- **Lightweight Charts**: Professional financial data visualization.
 
 ### DevOps & Infrastructure
 
-- **Docker & Docker Compose**: Containerized deployment
-- **Multi-stage builds**: Optimized container images
-- **Environment configuration**: Flexible deployment options
+- **Docker & Docker Compose**: Containerized deployment for easy setup.
 
-## Architecture Overview
+## Architecture
 
-### Core Components
+The system is a classic client-server application:
 
-#### 1. Exchange Integration Layer
-
-- **CCXT Wrapper**: Unified interface for multiple cryptocurrency exchanges
-- **Async Processing**: High-performance concurrent API calls
-
-#### 2. Spread Analysis Engine (in progress)
-
-- **Real-Time Monitoring**: Live price difference tracking between exchange pairs
-- **Historical Analysis**: 4-hour maximum spread calculation with configurable granularity
-- **Pair Discovery**: Automatic identification of supported trading pairs per exchange
-- **Opportunity Ranking**: Sort by potential arbitrage profitability
-
-#### 3. Data Management (in progress)
-
-- **Redis Caching**: Multi-level caching strategy for different data types
-- **Pandas Integration**: Large-scale data processing and analysis
-- **WebSocket Streaming**: Real-time data updates for current spreads
-- **REST API**: Static data and configuration endpoints
-
-### Supported Exchanges
-
-- **Everything included in the ccxt docs**
+1.  **Frontend (React)**: A user-facing dashboard that allows users to select a trading pair and see it visualized across multiple exchanges.
+2.  **Backend (FastAPI)**: Exposes a REST API that the frontend consumes. When a request is received, it fetches the necessary historical data from the specified exchanges via the CCXT library, performs the price comparison and spread calculations, and returns the data.
+3.  **Cache (Redis)**: Before making external API calls, the backend checks Redis for cached data to reduce latency and avoid hitting exchange rate limits.
 
 ## Getting Started
 
@@ -72,34 +51,28 @@ A real-time cryptocurrency arbitrage tracking platform that identifies and monit
   - Python 3.11+
   - Redis
 
-### System Requirements
-
-- **RAM**: 500MB for Docker containers 
-- **CPU**: Multi-core recommended for concurrent exchange API calls
-- **Network**: Stable internet connection for real-time data
-- **Storage**: Minimal (data is cached, not permanently stored)
-- **API Keys**: None required for basic functionality
-- **Default ports**:
-  - Frontend: 5173 (Vite)
-  - Backend: 8000 (Uvicorn)
-  - Redis: 6379
-
 ### Quick Start with Docker
 
-1. Clone the repository
+1. Clone the repository:
 
-```bash
-git clone https://github.com/somegithubuser245/cryptocurrency-tracker.git
-cd cryptocurrency-tracker
-```
+   ```bash
+   git clone https://github.com/somegithubuser245/cryptocurrency-tracker.git
+   cd cryptocurrency-tracker
+   ```
 
-2. Start all services
+2. (Optional) To use this specific version, checkout the tag:
 
-```bash
-docker-compose up --build
-```
+   ```bash
+   git checkout v0.1.0
+   ```
 
-3. Access the application
+3. Start all services:
+   ```bash
+   docker-compose up --build
+   ```
+
+
+4. Access the application
 
 - **Frontend**: http://localhost:5173
 - **API Documentation**: http://localhost:8000/docs
@@ -160,225 +133,6 @@ redis-cli
 
 You can test the connection with `KEYS *` to view cached keys.
 
-## API Endpoints
-
-### Static Data
-
-- `GET /api/static/config/exchanges` - Get supported exchanges and their configurations
-- `GET /api/static/config/pairs` - Get supported trading pairs across all exchanges
-- `GET /api/static/config/timeframes` - Get available time intervals for historical data
-
-### Real-Time Data
-
-- `GET /api/crypto/{exchange}/{pair}/ohlc?interval={interval}` - Get OHLC data for specific exchange and pair
-- `GET /api/spreads/current` - Get current spread data across all pairs and exchanges
-- `GET /api/spreads/historical/{pair}?hours={hours}` - Get historical maximum spreads
-
-### WebSocket Endpoints
-
-- `WS /ws/spreads/live` - Real-time spread updates
-- `WS /ws/prices/{exchange}/{pair}` - Live price updates for specific pair
-
-### Configuration
-
-- `GET /api/config/supported-pairs` - Get dynamically discovered trading pairs
-- `GET /api/config/exchanges` - Get active exchange configurations
-
-Full API documentation is available at http://localhost:8000/docs when the backend is running.
-
-## Current Features & Roadmap
-
-### ✅ Completed Features
-
-- [x] Multi-exchange OHLC data fetching via CCXT
-- [x] FastAPI backend with async processing
-- [x] React frontend with TypeScript
-- [x] Docker containerization
-- [x] Basic exchange pair discovery
-- [x] Chart comparison between exchanges
-
-### 🚧 In Progress
-
-- [ ] **Spread Analysis Table**: Main frontend table showing current and historical spreads
-- [ ] **WebSocket Integration**: Real-time spread updates
-- [ ] **Pair Discovery System**: Automatic detection of supported pairs per exchange
-- [ ] **Historical Max Spread Calculation**: 4-hour maximum spread tracking
-- [ ] **Pandas Integration**: Large-scale data processing optimization
-
-### 🔄 Frontend Improvements (In Progress)
-
-- [ ] **Visual Enhancements**:
-  - [ ] Remove duplicate column headers
-  - [ ] Implement sorting by 4-hour max spread
-  - [ ] Add color coding for positive/negative spreads
-  - [ ] Responsive table design
-- [ ] **Data Management**:
-  - [ ] State synchronization between REST API and WebSocket data
-  - [ ] Efficient data fetching and caching strategies
-  - [ ] Real-time spread calculations
-
-### 🔮 Planned Features
-
-- [ ] **Advanced Analytics**:
-
-  - [ ] Trend analysis and spread prediction
-  - [ ] Arbitrage opportunity alerts
-  - [ ] Portfolio tracking integration
-  - [ ] Risk assessment tools
-
-- [ ] **Trading Integration**:
-
-  - [ ] Partial fill management system
-  - [ ] Position tracking and PnL calculation
-  - [ ] Trade execution across multiple exchanges
-
-- [ ] **Performance Optimizations**:
-  - [ ] Database integration for historical data
-  - [ ] Improved caching strategies
-  - [ ] Rate limiting and request optimization
-
-## Project Structure
-
-```
-├── backend/
-│   ├── src/
-│   │   ├── main.py                        # FastAPI application entry point
-│   │   ├── config/
-│   │   │   ├── config.py                  # Main configuration and exchange enums
-│   │   │   └── binance_config.py         # Binance-specific configuration
-│   │   ├── routes/
-│   │   │   ├── main.py                    # Main API routes
-│   │   │   ├── crypto_data.py             # OHLC data endpoints
-│   │   │   ├── static_data.py             # Static configuration endpoints
-│   │   │   ├── scan_spreads.py            # Spread analysis endpoints (WIP)
-│   │   │   └── models/
-│   │   │       └── schemas.py             # Pydantic models and data schemas
-│   │   ├── services/
-│   │   │   ├── external_api_caller.py     # CCXT wrapper and exchange integration
-│   │   │   ├── api_call_manager.py        # API rate limiting and management
-│   │   │   └── caching.py                 # Redis caching implementation
-│   │   └── utils/
-│   │       └── timeframes_equalizer.py    # Time interval normalization
-│   ├── tests/
-│   │   ├── __init__.py
-│   │   └── test_api.py                    # API endpoint tests
-│   ├── requirements.txt                   # Python dependencies
-│   └── Dockerfile                         # Backend container configuration
-├── frontend/
-│   ├── src/
-│   │   ├── main.tsx                       # React application entry point
-│   │   ├── App.tsx                        # Main application component
-│   │   ├── components/
-│   │   ├── api/
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   │   └── index.ts                   # TypeScript type definitions
-│   │   ├── utils/
-│   │   │   └── priceFormatter.ts          # Price formatting utilities
-│   │   └── assets/
-│   ├── public/
-│   ├── package.json                       # Frontend dependencies
-│   ├── vite.config.ts                     # Vite build configuration
-│   ├── tsconfig.json                      # TypeScript configuration
-│   └── Dockerfile                         # Frontend container configuration
-├── docker-compose.yml                     # Multi-container orchestration
-├── pyproject.toml                         # Python project configuration
-└── README.md                              # This file
-```
-
-## Development Workflow
-
-### Setting Up Development Environment
-
-```bash
-# Clone the repository
-git clone https://github.com/somegithubuser245/cryptocurrency-tracker.git
-cd cryptocurrency-tracker
-
-# Start development with Docker
-docker-compose up --build
-```
-
-### Testing
-
-```bash
-# Backend tests
-cd backend
-pytest tests/ -v
-```
-
-### Key Development Areas
-
-#### 1. Spread Analysis Implementation
-
-- **Location**: `backend/src/routes/scan_spreads.py`
-- **Status**: In development
-- **Goal**: Implement real-time and historical spread calculations
-
-#### 2. Pair Discovery System
-
-- **Location**: `backend/src/services/external_api_caller.py`
-- **Status**: Partially implemented
-- **Goal**: Automatic detection of supported pairs across exchanges
-
-#### 3. Frontend Spread Table
-
-- **Location**: `frontend/src/components/` (new component needed)
-- **Status**: Planned
-- **Goal**: Display sortable spread analysis table
-
-#### 4. WebSocket Integration
-
-- **Location**: Both backend and frontend
-- **Status**: Planned
-- **Goal**: Real-time spread updates
-
-## Contributing
-
-**see issues for more info**
-
-### Priority Development Tasks
-
-1. **Spread Analysis Table (Frontend)**
-
-   - Create spread analysis table component
-   - Implement sorting by 4-hour max spread
-   - Add color coding for positive/negative spreads
-   - Ensure responsive design
-
-2. **Historical Max Spread Calculation (Backend)**
-
-   - Implement 4-hour maximum spread tracking
-   - Integrate with pandas for data processing
-   - Add caching for computed spreads
-
-3. **WebSocket Implementation**
-
-   - Set up WebSocket server in FastAPI
-   - Implement real-time spread updates
-   - Add frontend WebSocket client
-
-4. **Pair Discovery System**
-   - Complete automatic pair discovery across exchanges
-   - Implement caching for discovered pairs
-   - Add pair filtering and management
-
-### Contribution Guidelines
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Follow the project structure** and naming conventions
-4. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
-5. **Push to the branch** (`git push origin feature/amazing-feature`)
-6. **Open a Pull Request**
-
-> Updating docs and writing tests is nice, but not necessary
-
-### Code Quality Standards
-
-- **Backend**: Follow PEP 8, use type hints, add docstrings
-- **Frontend**: Use TypeScript, follow React best practices, add proper typing
-- **Documentation**: Update README and API docs if necessary
 
 ## License
 
