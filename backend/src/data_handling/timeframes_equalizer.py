@@ -39,7 +39,7 @@ class TimeframeSynchronizer:
                 ohlc_entry,
                 columns=self.cnames
             ).set_index(self.cnames[0])
-            df.index = pd.to_datetime(df.index, unit="ms", origin="unix")
+            df.index = pd.to_datetime(df.index, unit="ms", origin="unix", utc=True)
             dataframes_raw.append(df)
 
         common_index = dataframes_raw[0].index
