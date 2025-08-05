@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from routes.models.schemas import PriceTickerRequest
-from services.dependencies import spreads_calculator_dependency
+from utlis.dependencies.dependencies import spreads_calculator_dependency
 
 spreads_router = APIRouter(prefix="/spreads")
 
