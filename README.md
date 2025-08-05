@@ -13,6 +13,9 @@ This repository is tagged at `v0.1.0` to represent this initial version. Future 
 - **Dynamic Pair Discovery**: Automatically finds all tradable pairs supported by the integrated exchanges.
 - **Cached Responses**: Utilizes Redis to cache API responses for improved performance.
 
+<img width="1014" height="816" alt="image_2025-08-05_23-31-45" src="https://github.com/user-attachments/assets/b77c7f7b-3157-4ea3-be26-3527dd3e9e8b" />
+
+
 ## Tech Stack
 
 ### Backend
