@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from routes.models.schemas import config_types
-from utlis.dependencies.dependencies import call_manager_dependency
+from utils.dependencies.dependencies import call_manager_dependency
 
 static_router = APIRouter(prefix="/static")
 

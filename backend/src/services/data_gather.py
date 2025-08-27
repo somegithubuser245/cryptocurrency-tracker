@@ -1,7 +1,7 @@
 
 from config.config import SUPPORTED_EXCHANGES
 from data_handling.exchanges_symbols_converter import Converter
-from routes.models.schemas import PriceTickerRequest
+from routes.models.schemas import PriceTicker
 from services.caching import Cacher
 from services.external_api_caller import CryptoFetcher
 
@@ -20,7 +20,7 @@ class DataManager:
         self.fetcher = fetcher
         self.converter = converter
 
-    async def get_ohlc_data_cached(self, requests: list[PriceTickerRequest]) -> dict[str, list[list[float]]]:
+    async def get_ohlc_data_cached(self, requests: list[PriceTicker]) -> dict[str, list[list[float]]]:
         """
         This can be used in the future to implement batching-like data gathering
         For now, this functions main purpose is to fetch data using async from
@@ -35,27 +35,31 @@ class DataManager:
         if not uncached_requests:
             return ohlc_dict
         
-        ticker_data_responses = await asyncio.gather(*[
-            self.fetcher.get_ohlc(request) for request in uncached_requests
-        ])
+        tasks = [(self.fetcher.get_ohlc(request)) for request in requests]
+        ticker_data_responses = await asyncio.gather(*tasks, return_exceptions=True)
 
         for index, uncached_ticker_request in enumerate(uncached_requests):
             data_response = ticker_data_responses[index]
             uncached_request_key = uncached_ticker_request.construct_key()
+            
+            if not data_response:
+                ohlc_dict.pop(uncached_request_key)
+                continue
+            
             ohlc_dict[uncached_request_key] = data_response
             
             self.redis_cacher.set(
                 json.dumps(data_response),
                 uncached_ticker_request,
-                300)
+                10000)
 
         return ohlc_dict
 
     def _fill_with_cached_get_uncached(
             self,
             ohlc_dict: dict,
-            requests: list[PriceTickerRequest]
-    ) -> tuple[list[PriceTickerRequest], dict[str, list[list[float]]]]:
+            requests: list[PriceTicker]
+    ) -> tuple[list[PriceTicker], dict[str, list[list[float]]]]:
         """
         Fill main dict with cached ticker data, if any found
         Otherwise, expand the list to fetch data for uncached ticker requests

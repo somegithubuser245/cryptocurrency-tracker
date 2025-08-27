@@ -37,10 +37,9 @@ def get_data_manager(
 
 @lru_cache()
 def get_spreads_calculator(
-    data_manager: DataManager = Depends(get_data_manager),
     equalizer: TimeframeSynchronizer = Depends(get_equalizer)
 ) -> SpreadCalculator:
-    return SpreadCalculator(data_manager=data_manager, timeframe_synchronizer=equalizer)
+    return SpreadCalculator(timeframe_synchronizer=equalizer)
 
 
 @lru_cache()
@@ -63,3 +62,6 @@ def get_api_call_manager(
 
 call_manager_dependency = Annotated[ApiCallManager, Depends(get_api_call_manager)]
 spreads_calculator_dependency = Annotated[SpreadCalculator, Depends(get_spreads_calculator)]
+converter_dependency = Annotated[Converter, Depends(get_converter)]
+cacher_dependency = Annotated[Cacher, Depends(get_cacher)]
+data_manager_dependency = Annotated[DataManager, Depends(get_data_manager)]

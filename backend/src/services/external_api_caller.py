@@ -1,7 +1,8 @@
 import asyncio
+import logging
 
 import ccxt.async_support as ccxt
-from routes.models.schemas import PriceTickerRequest
+from routes.models.schemas import PriceTicker
 
 
 class CryptoFetcher:
@@ -12,13 +13,17 @@ class CryptoFetcher:
     def __init__(self) -> None:
         self._exchanges: dict[str, ccxt.Exchange] = {}
 
-    async def get_ohlc(self, request: PriceTickerRequest) -> list[list[float]]:
+    async def get_ohlc(self, request: PriceTicker) -> list[list[float]]:
         exchange = self._get_saved_exchange(request.api_provider.value)
         
-        return await exchange.fetch_ohlcv(
-            request.crypto_id.replace("-", "/"),
-            request.interval,
-        )
+        try:
+            return await exchange.fetch_ohlcv(
+                request.crypto_id.replace("-", "/"),
+                request.interval,
+            )
+        except ccxt.BaseError:
+            logging.info(f"Something went wrong when fetching ohlc for {request.crypto_id} with {request.api_provider}")
+            return None
 
     async def get_exchanges_with_markets(self, exchanges: list[str]) -> list[ccxt.Exchange]:
         """

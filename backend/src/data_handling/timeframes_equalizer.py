@@ -1,10 +1,10 @@
 import pandas as pd
 from functools import reduce
-
+import logging
 
 class TimeframeSynchronizer:
     def __init__(self) -> None:
-        self.cnames = ["time", "open", "high", "low", "close", "volume"]
+        self._cnames = ["time", "open", "high", "low", "close", "volume"]
 
     def sync_two(
         self,
@@ -35,10 +35,17 @@ class TimeframeSynchronizer:
     ) -> list[pd.DataFrame]:
         dataframes_raw: list[pd.DataFrame] = []
         for ohlc_entry in ohlc_data_entries:
+            print(len(ohlc_entry[0]))
+            print(len(self._cnames))
+
+            if len(ohlc_entry[0]) != len(self._cnames):
+                logging.info("OHLC CORRUPTED! SKIPPING")
+                continue
+            
             df = pd.DataFrame(
                 ohlc_entry,
-                columns=self.cnames
-            ).set_index(self.cnames[0])
+                columns=self._cnames
+            ).set_index(self._cnames[0])
             df.index = pd.to_datetime(df.index, unit="ms", origin="unix", utc=True)
             dataframes_raw.append(df)
 

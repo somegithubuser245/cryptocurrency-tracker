@@ -30,10 +30,19 @@ class CompareRequest(RedisCacheble):
         )
 
 
-class PriceTickerRequest(RedisCacheble):
+class PriceTicker(RedisCacheble):
     crypto_id: str
     interval: str = "1h"
     api_provider: Exchange
+    supported_exchanges: list[Exchange] | None = None
 
     def construct_key(self):
         return f"{self.api_provider}:{self.crypto_id}:{self.interval}"
+    
+    def many_exchanges_generator(self, exchange_names: list[Exchange]) -> list["PriceTicker"]:
+        return [
+        PriceTicker(
+            crypto_id=self.crypto_id,
+            interval=self.interval,
+            api_provider=exchange_name
+        ) for exchange_name in exchange_names ]

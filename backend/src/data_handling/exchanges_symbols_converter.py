@@ -45,6 +45,7 @@ class Converter:
 
         left_merge_frame = symbols_frames_raw[0]
 
+        # TODO concat should be a better way...
         for right_merge_frame in symbols_frames_raw[1:]:
             left_merge_frame = left_merge_frame.merge(
                 right_merge_frame, how="outer", left_index=True, right_index=True

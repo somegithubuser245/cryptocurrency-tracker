@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from routes.models.schemas import CompareRequest
-from utlis.dependencies.dependencies import call_manager_dependency 
+from utils.dependencies.dependencies import call_manager_dependency 
 
 crypto_router = APIRouter(prefix="/crypto")
 
