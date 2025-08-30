@@ -1,8 +1,7 @@
-from fastapi import APIRouter
-
-from routes.models.schemas import PriceTicker
-from utils.dependencies.dependencies import spreads_calculator_dependency, data_manager_dependency
 from background.all_pairs_historical_spread import get_them_pairs
+from fastapi import APIRouter
+from routes.models.schemas import PriceTicker
+from utils.dependencies.dependencies import data_manager_dependency, spreads_calculator_dependency
 
 spreads_router = APIRouter(prefix="/spreads")
 
@@ -32,4 +31,3 @@ async def get_all_spreads(
         spr_calc
     )
     return spreads
-    

@@ -1,11 +1,10 @@
+import ccxt
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.crypto_data import crypto_router
-from routes.static_data import static_router
 from routes.scan_spreads import spreads_router
-
-import ccxt
+from routes.static_data import static_router
 
 # Setup
 app = FastAPI()

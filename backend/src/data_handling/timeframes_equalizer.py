@@ -1,6 +1,7 @@
-import pandas as pd
-from functools import reduce
 import logging
+
+import pandas as pd
+
 
 class TimeframeSynchronizer:
     def __init__(self) -> None:
@@ -28,7 +29,7 @@ class TimeframeSynchronizer:
         result2 = sorted2.reset_index().assign(time=lambda x: x["time"] / 1000).to_dict("records")
 
         return (result1, result2)
-    
+
     def sync_many(
         self,
         ohlc_data_entries: list[list[list[float]]]
@@ -41,7 +42,7 @@ class TimeframeSynchronizer:
             if len(ohlc_entry[0]) != len(self._cnames):
                 logging.info("OHLC CORRUPTED! SKIPPING")
                 continue
-            
+
             df = pd.DataFrame(
                 ohlc_entry,
                 columns=self._cnames

@@ -15,7 +15,7 @@ class CryptoFetcher:
 
     async def get_ohlc(self, request: PriceTicker) -> list[list[float]]:
         exchange = self._get_saved_exchange(request.api_provider.value)
-        
+
         try:
             return await exchange.fetch_ohlcv(
                 request.crypto_id.replace("-", "/"),

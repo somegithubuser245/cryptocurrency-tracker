@@ -10,7 +10,7 @@ config_types: dict[str, dict] = {
 class RedisCacheble(BaseModel):
     def construct_key(self) -> str:
         raise NotImplementedError
-    
+
     def separate_strings_with_colons(self, *parameters: list[str]) -> str:
         key = ""
         for index, parameter in enumerate(parameters):
@@ -38,11 +38,16 @@ class PriceTicker(RedisCacheble):
 
     def construct_key(self):
         return f"{self.api_provider}:{self.crypto_id}:{self.interval}"
-    
-    def many_exchanges_generator(self, exchange_names: list[Exchange]) -> list["PriceTicker"]:
-        return [
-        PriceTicker(
-            crypto_id=self.crypto_id,
-            interval=self.interval,
+
+    @classmethod
+    def generate_with_many_exchanges(
+        cls,
+        crypto_id: str,
+        interval: str,
+        exchange_names: list[Exchange]
+    ) -> list["PriceTicker"]:
+        return [PriceTicker(
+            crypto_id=crypto_id,
+            interval=interval,
             api_provider=exchange_name
         ) for exchange_name in exchange_names ]

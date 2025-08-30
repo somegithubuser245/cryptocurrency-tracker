@@ -4,10 +4,8 @@ from config.config import SUPPORTED_EXCHANGES, TickerType
 from data_handling.exchanges_symbols_converter import Converter
 from data_handling.timeframes_equalizer import TimeframeSynchronizer
 from routes.models.schemas import CompareRequest, PriceTicker
-from services.caching import Cacher
 from services.data_gather import DataManager
 from services.external_api_caller import CryptoFetcher
-
 
 logger = logging.getLogger(__name__)
 class ApiCallManager():
@@ -52,7 +50,7 @@ class ApiCallManager():
 
         return {
             exchange_1_name: aligned_timeseries1,
-            exchange_2_name: aligned_timeseries2            
+            exchange_2_name: aligned_timeseries2
         }
 
     async def get_arbitrable_pairs(self) -> dict[str, list[str]]:

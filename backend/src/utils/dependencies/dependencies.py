@@ -1,15 +1,15 @@
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends
-
 from data_handling.exchanges_symbols_converter import Converter
 from data_handling.timeframes_equalizer import TimeframeSynchronizer
+from fastapi import Depends
 from services.api_call_manager import ApiCallManager
 from services.caching import Cacher
 from services.data_gather import DataManager
 from services.external_api_caller import CryptoFetcher
 from services.spread_calculator import SpreadCalculator
+
 
 @lru_cache()
 def get_cacher() -> Cacher:
