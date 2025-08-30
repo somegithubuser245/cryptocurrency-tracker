@@ -3,7 +3,7 @@ from config.config import logger, settings
 from routes.models.schemas import RedisCacheble
 
 
-class Cacher:
+class RedisClient:
     def __init__(self) -> None:
         self.available = self._init_client()
 

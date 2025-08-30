@@ -13,6 +13,7 @@ python-dotenv
 httpx
 
 # backend data handling
+celery
 pandas
 numpy
 ccxt

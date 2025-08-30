@@ -1,11 +1,10 @@
-
 import asyncio
 import json
 
 from config.config import SUPPORTED_EXCHANGES
 from data_handling.exchanges_symbols_converter import Converter
 from routes.models.schemas import PriceTicker
-from services.caching import Cacher
+from services.caching import RedisClient
 from services.external_api_caller import CryptoFetcher
 
 
@@ -15,12 +14,15 @@ class DataManager:
     If there's cache, it will return it
     If not, it will make calls to fetch it
     """
-    def __init__(self, redis_cacher: Cacher, fetcher: CryptoFetcher, converter: Converter):
+
+    def __init__(self, redis_cacher: RedisClient, fetcher: CryptoFetcher, converter: Converter):
         self.redis_cacher = redis_cacher
         self.fetcher = fetcher
         self.converter = converter
 
-    async def get_ohlc_data_cached(self, requests: list[PriceTicker]) -> dict[str, list[list[float]]]:
+    async def get_ohlc_data_cached(
+        self, requests: list[PriceTicker]
+    ) -> dict[str, list[list[float]]]:
         """
         This can be used in the future to implement batching-like data gathering
         For now, this functions main purpose is to fetch data using async from
@@ -28,8 +30,7 @@ class DataManager:
         """
         ohlc_dict = {request.construct_key(): None for request in requests}
         uncached_requests, ohlc_dict = self._fill_with_cached_get_uncached(
-            ohlc_dict=ohlc_dict,
-            requests=requests
+            ohlc_dict=ohlc_dict, requests=requests
         )
 
         if not uncached_requests:
@@ -48,17 +49,12 @@ class DataManager:
 
             ohlc_dict[uncached_request_key] = data_response
 
-            self.redis_cacher.set(
-                json.dumps(data_response),
-                uncached_ticker_request,
-                10000)
+            self.redis_cacher.set(json.dumps(data_response), uncached_ticker_request, 10000)
 
         return ohlc_dict
 
     def _fill_with_cached_get_uncached(
-            self,
-            ohlc_dict: dict,
-            requests: list[PriceTicker]
+        self, ohlc_dict: dict, requests: list[PriceTicker]
     ) -> tuple[list[PriceTicker], dict[str, list[list[float]]]]:
         """
         Fill main dict with cached ticker data, if any found
