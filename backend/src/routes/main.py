@@ -1,4 +1,5 @@
 import ccxt
+import sqlalchemy
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -20,6 +21,11 @@ app.add_middleware(
 app.include_router(static_router)
 app.include_router(crypto_router)
 app.include_router(spreads_router)
+
+
+@app.get("/db-version")
+def get_db_version() -> str:
+    return sqlalchemy.__version__
 
 
 @app.exception_handler(ValueError)

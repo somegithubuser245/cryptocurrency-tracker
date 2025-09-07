@@ -17,3 +17,7 @@ celery
 pandas
 numpy
 ccxt
+
+# shared
+alembic
+SQLAlchemy
