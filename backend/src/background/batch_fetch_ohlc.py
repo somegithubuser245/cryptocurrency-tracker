@@ -43,14 +43,14 @@ class BatchFetcher:
         crypto_pairs_tickers, crypto_ids = await self.init_tickers_and_ids()
 
         crypto_pairs_len = len(crypto_pairs_tickers)
-        chunk_start = 0
 
-        for chunk_end in range(0, crypto_pairs_len, self.CHUNK_SIZE):
-            tickers_chunk = crypto_pairs_tickers[chunk_start:chunk_end]
+        for i in range(0, crypto_pairs_len, self.CHUNK_SIZE):
+            chunk_end = min(i + self.CHUNK_SIZE, crypto_pairs_len)
+
+            tickers_chunk = crypto_pairs_tickers[i:chunk_end]
             downloaded_ohlc = await self.data_manager.get_ohlc_data_cached(tickers_chunk)
             downloaded_ohlc_results.update(downloaded_ohlc)
 
-            chunk_start = chunk_end
             await asyncio.sleep(0.5)
 
         return downloaded_ohlc_results

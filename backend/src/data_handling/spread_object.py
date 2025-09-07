@@ -26,7 +26,7 @@ class Spread:
             index=spreads_series.index
         )
 
-    def _calculate_max_spread_per_row(self, x: pd.Series):
+    def _calculate_max_spread_per_row(self, x: pd.Series) -> tuple[int | str]:
         max, min = x.max(), x.min()
         max_exchange_name, min_exchange_name = x.idxmax(), x.idxmin()
 
