@@ -2,10 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt ./
+# libpq is a postgres dev library, needed for psycopg2
+# psycopg2 needs gcc as well, for compilation
 RUN apt-get update \
     && apt-get -y install libpq-dev gcc
+COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 # Copy application code
