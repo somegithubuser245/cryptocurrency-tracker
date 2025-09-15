@@ -4,6 +4,8 @@ WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt ./
+RUN apt-get update \
+    && apt-get -y install libpq-dev gcc
 RUN pip install -r requirements.txt
 
 # Copy application code
