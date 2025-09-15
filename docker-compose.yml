@@ -35,3 +35,16 @@ services:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+
+  db:
+    image: postgres
+    # aren't necessary, can be skipped
+    restart: always
+    shm_size: 128mb
+    environment:
+      # only the password is mandatory
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"

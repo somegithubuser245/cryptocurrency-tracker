@@ -21,3 +21,4 @@ ccxt
 # shared
 alembic
 SQLAlchemy
+psycopg2
