@@ -1,10 +1,6 @@
-import logging
 from enum import Enum, StrEnum, auto
 
 from pydantic_settings import BaseSettings
-
-# most straightforward way to show logs in uvicorn
-logger = logging.getLogger("uvicorn.error")
 
 
 class Settings(BaseSettings):
@@ -32,7 +28,7 @@ CACHE_TTL_CONFIG: dict = {
 }
 
 
-class Exchange(str, Enum):
+class Exchange(StrEnum):
     BINANCE = "binance"
     OKX = "okx"
     BYBIT = "bybit"
@@ -58,24 +54,4 @@ TIME_RANGES: dict = {
     "1d": "Daily",
     "1w": "Weekly",
     "1M": "Monthly",
-}
-
-SUPPORTED_PAIRS: dict = {
-    "BTC-USDT": "Bitcoin",
-    "ETH-USDT": "Ethereum",
-    "SOL-USDT": "Solana",
-    "ADA-USDT": "Cardano",
-    "AVAX-USDT": "Avalanche",
-    "DOT-USDT": "Polkadot",
-    "DOGE-USDT": "Dogecoin",
-    "SHIB-USDT": "Shiba Inu",
-    "LTC-USDT": "Litecoin",
-    "BCH-USDT": "Bitcoin Cash",
-    "ETC-USDT": "Ethereum Classic",
-    "XRP-USDT": "Ripple",
-    "TRX-USDT": "Tron",
-    "LINK-USDT": "Chainlink",
-    "UNI-USDT": "Uniswap",
-    "AAVE-USDT": "Aave",
-    "XEM-USDT": "XEM",
 }

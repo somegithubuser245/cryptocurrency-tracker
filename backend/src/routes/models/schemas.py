@@ -1,11 +1,5 @@
-from config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
+from config.config import Exchange
 from pydantic import BaseModel
-
-config_types: dict[str, dict] = {
-    "timeranges": TIME_RANGES,
-    "pairs": SUPPORTED_PAIRS,
-    "exchanges": SUPPORTED_EXCHANGES,
-}
 
 
 class RedisCacheble(BaseModel):
