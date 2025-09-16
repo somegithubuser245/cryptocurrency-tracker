@@ -2,6 +2,7 @@ import asyncio
 import logging
 from typing import Annotated
 
+from background.db_pairs import insert_or_update_pairs
 from fastapi import Depends
 from routes.models.schemas import PriceTicker
 from services.caching import RedisClient
@@ -25,7 +26,7 @@ class BatchFetcher:
 
     async def init_tickers_and_ids(self) -> tuple[list, str]:
         arbitrable_pairs_with_exchanges = await self.data_manager.get_arbitrable_pairs()
-
+        insert_or_update_pairs(list(arbitrable_pairs_with_exchanges.keys()))
         crypto_ids = list(arbitrable_pairs_with_exchanges.keys())
         crypto_pairs_tickers = []
 

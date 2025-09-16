@@ -49,7 +49,11 @@ class DataManager:
 
             ohlc_dict[uncached_request_key] = data_response
 
-            self.redis_cacher.set(json.dumps(data_response), uncached_ticker_request, 10000)
+            self.redis_cacher.set(
+                key=uncached_ticker_request.construct_key(),
+                data=json.dumps(data_response),
+                ttl=10000,
+            )
 
         return ohlc_dict
 
@@ -63,7 +67,7 @@ class DataManager:
         uncached = []
         for ticker_request in requests:
             ticker_key = ticker_request.construct_key()
-            cached = self.redis_cacher.get(ticker_request)
+            cached = self.redis_cacher.get(ticker_key)
 
             if not cached:
                 uncached.append(ticker_request)

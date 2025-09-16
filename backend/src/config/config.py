@@ -1,9 +1,10 @@
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
 
 from pydantic_settings import BaseSettings
+from sqlalchemy import URL
 
 
-class Settings(BaseSettings):
+class RedisSettings(BaseSettings):
     """This is a pydantic settings class
     You can define your own .env
     If not, pydantic defaults
@@ -14,7 +15,24 @@ class Settings(BaseSettings):
     REDIS_DB: int = 0
 
 
-settings = Settings()
+class PostgresDBSettings(BaseSettings):
+    POSTGRES_DB: str = "postgres"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "root"
+    DRIVER_NAME: str = "postgresql"
+    PORT: int = 5432
+
+    def construct_url(self, use_alembic: bool = False) -> URL:
+        host = "localhost" if use_alembic else "db"
+
+        return URL.create(
+            host=host,
+            port=self.PORT,
+            drivername=self.DRIVER_NAME,
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            database=self.POSTGRES_DB,
+        )
 
 
 CACHE_TTL_CONFIG: dict = {
