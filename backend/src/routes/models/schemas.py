@@ -7,6 +7,7 @@ config_types: dict[str, dict] = {
     "exchanges": SUPPORTED_EXCHANGES,
 }
 
+
 class RedisCacheble(BaseModel):
     def construct_key(self) -> str:
         raise NotImplementedError
@@ -16,18 +17,6 @@ class RedisCacheble(BaseModel):
         for index, parameter in enumerate(parameters):
             key += f"{parameter}:" if index < len(parameters) - 1 else parameter
         return key
-
-
-class CompareRequest(RedisCacheble):
-    exchange1: Exchange
-    exchange2: Exchange
-    crypto_id: str
-    interval: str = "1h"
-
-    def construct_key(self):
-        return super().separate_strings_with_colons(
-            *self.model_dump().values()
-        )
 
 
 class PriceTicker(RedisCacheble):
@@ -41,13 +30,9 @@ class PriceTicker(RedisCacheble):
 
     @classmethod
     def generate_with_many_exchanges(
-        cls,
-        crypto_id: str,
-        interval: str,
-        exchange_names: list[Exchange]
+        cls, crypto_id: str, interval: str, exchange_names: list[Exchange]
     ) -> list["PriceTicker"]:
-        return [PriceTicker(
-            crypto_id=crypto_id,
-            interval=interval,
-            api_provider=exchange_name
-        ) for exchange_name in exchange_names ]
+        return [
+            PriceTicker(crypto_id=crypto_id, interval=interval, api_provider=exchange_name)
+            for exchange_name in exchange_names
+        ]

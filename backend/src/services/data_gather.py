@@ -2,7 +2,7 @@ import asyncio
 import json
 
 from config.config import SUPPORTED_EXCHANGES
-from data_handling.exchanges_symbols_converter import Converter
+from data_manipulation.exchanges_symbols_converter import Converter
 from routes.models.schemas import PriceTicker
 from services.caching import RedisClient
 from services.external_api_caller import CryptoFetcher

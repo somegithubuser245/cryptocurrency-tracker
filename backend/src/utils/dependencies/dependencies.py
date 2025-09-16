@@ -1,10 +1,9 @@
 from functools import lru_cache
 from typing import Annotated
 
-from data_handling.exchanges_symbols_converter import Converter
-from data_handling.timeframes_equalizer import TimeframeSynchronizer
+from data_manipulation.exchanges_symbols_converter import Converter
+from data_manipulation.timeframes_equalizer import TimeframeSynchronizer
 from fastapi import Depends
-from services.api_call_manager import ApiCallManager
 from services.caching import RedisClient
 from services.data_gather import DataManager
 from services.external_api_caller import CryptoFetcher
@@ -47,26 +46,6 @@ def get_spreads_calculator(
     return SpreadCalculator(timeframe_synchronizer=equalizer)
 
 
-@lru_cache()
-def get_api_call_manager(
-    fetcher: CryptoFetcher = Depends(get_crypto_fetcher),
-    data_manager: DataManager = Depends(get_data_manager),
-    converter: Converter = Depends(get_converter),
-    equalizer: TimeframeSynchronizer = Depends(get_equalizer),
-) -> ApiCallManager:
-    """
-    Provides an ApiCallManager instance with all its dependencies injected.
-    lru_cache ensures a single instance is created and reused across requests.
-    """
-    return ApiCallManager(
-        fetcher=fetcher,
-        data_manager=data_manager,
-        converter=converter,
-        equalizer=equalizer,
-    )
-
-
-call_manager_dependency = Annotated[ApiCallManager, Depends(get_api_call_manager)]
 spreads_calculator_dependency = Annotated[SpreadCalculator, Depends(get_spreads_calculator)]
 converter_dependency = Annotated[Converter, Depends(get_converter)]
 RedisClientDependency = Annotated[RedisClient, Depends(get_cacher)]
