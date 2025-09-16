@@ -36,7 +36,7 @@ class DataManager:
         if not uncached_requests:
             return ohlc_dict
 
-        tasks = [(self.fetcher.get_ohlc(request)) for request in requests]
+        tasks = [(self.fetcher.get_ohlc(request)) for request in uncached_requests]
         ticker_data_responses = await asyncio.gather(*tasks, return_exceptions=True)
 
         for index, uncached_ticker_request in enumerate(uncached_requests):
