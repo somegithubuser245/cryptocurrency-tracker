@@ -25,3 +25,12 @@ async def get_all_spreads(
 ) -> dict:
     bg_tasks.add_task(batch_fetcher.download_all_in_chunks)
     return {"background task added": True}
+
+
+@spreads_router.get("/init-pairs")
+async def init_pairs(
+    batch_fetcher: BatchFetcherDependency,
+    bg_tasks: BackgroundTasks,
+) -> dict:
+    bg_tasks.add_task(batch_fetcher.init_pairs_db)
+    return {"pairs init process started": True}

@@ -3,11 +3,17 @@ import logging
 from typing import Annotated
 
 from background.db_pairs import insert_or_update_pairs
+from config.config import SUPPORTED_EXCHANGES
 from fastapi import Depends
 from routes.models.schemas import PriceTicker
 from services.caching import RedisClient
 from services.data_gather import DataManager
-from utils.dependencies.dependencies import DataManagerDependency, RedisClientDependency
+from services.external_api_caller import CryptoFetcher
+from utils.dependencies.dependencies import (
+    CryptoFetcherDependency,
+    DataManagerDependency,
+    RedisClientDependency,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +23,22 @@ class BatchFetcher:
         self,
         data_manager: DataManager,
         redis_client: RedisClient,
+        external_api_caller: CryptoFetcher,
         chunk_size: int = 100,
     ) -> None:
         self.data_manager = data_manager
         self.redis_client = redis_client
+        self.external_api_caller = external_api_caller
 
         self.CHUNK_SIZE = chunk_size
+
+    async def init_pairs_db(self) -> None:
+        exchanges_with_symbols = await self.external_api_caller.get_exchanges_with_markets(
+            SUPPORTED_EXCHANGES
+        )
+
+        for exchange in exchanges_with_symbols:
+            pairs_ids = insert_or_update_pairs(exchange.symbols)
 
     async def init_tickers_and_ids(self) -> tuple[list, str]:
         arbitrable_pairs_with_exchanges = await self.data_manager.get_arbitrable_pairs()
@@ -64,10 +80,12 @@ class BatchFetcher:
 async def get_batch_fetcher(
     redis_client: RedisClientDependency,
     data_manager: DataManagerDependency,
+    external_api_caller: CryptoFetcherDependency,
 ) -> BatchFetcher:
     return BatchFetcher(
         data_manager=data_manager,
         redis_client=redis_client,
+        external_api_caller=external_api_caller,
         chunk_size=100,
     )
 

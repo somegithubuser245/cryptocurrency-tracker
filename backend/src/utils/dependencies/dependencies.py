@@ -50,3 +50,4 @@ spreads_calculator_dependency = Annotated[SpreadCalculator, Depends(get_spreads_
 converter_dependency = Annotated[Converter, Depends(get_converter)]
 RedisClientDependency = Annotated[RedisClient, Depends(get_cacher)]
 DataManagerDependency = Annotated[DataManager, Depends(get_data_manager)]
+CryptoFetcherDependency = Annotated[CryptoFetcher, Depends(get_crypto_fetcher)]
