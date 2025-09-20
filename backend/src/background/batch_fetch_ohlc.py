@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Annotated
 
-from background.db_pairs import insert_or_update_pairs
+from background.db_pairs import insert_exchange_names, insert_or_update_pairs
 from config.config import SUPPORTED_EXCHANGES
 from fastapi import Depends
 from routes.models.schemas import PriceTicker
@@ -34,11 +34,14 @@ class BatchFetcher:
 
     async def init_pairs_db(self) -> None:
         exchanges_with_symbols = await self.external_api_caller.get_exchanges_with_markets(
-            SUPPORTED_EXCHANGES
+            list(SUPPORTED_EXCHANGES.keys())
         )
 
         for exchange in exchanges_with_symbols:
-            pairs_ids = insert_or_update_pairs(exchange.symbols)
+            exchange_name = exchange.id
+            exchange_symbols = exchange.symbols
+            insert_or_update_pairs(exchange.symbols)
+            insert_exchange_names(exchange_name, exchange_symbols)
 
     async def init_tickers_and_ids(self) -> tuple[list, str]:
         arbitrable_pairs_with_exchanges = await self.data_manager.get_arbitrable_pairs()
