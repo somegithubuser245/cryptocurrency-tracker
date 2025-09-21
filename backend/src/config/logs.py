@@ -1,3 +1,5 @@
+from logging import config
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -35,3 +37,12 @@ LOGGING_CONFIG = {
     },
     "root": {"level": "INFO", "handlers": ["default"]},
 }
+
+
+def setup_logging() -> None:
+    """
+    This function must be called after running migrations seperately.
+
+    Alembic overrides all loggers when called internally, which is not what we want
+    """
+    config.dictConfig(LOGGING_CONFIG)

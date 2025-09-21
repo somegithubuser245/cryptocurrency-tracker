@@ -1,18 +1,28 @@
 import logging
+from contextlib import asynccontextmanager
 from logging import config
 
 import ccxt
-import sqlalchemy
-from config.logs import LOGGING_CONFIG
+from config.database import run_alembic_migrations
+from config.logs import LOGGING_CONFIG, setup_logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.scan_spreads import spreads_router
+from utils.dependencies.dependencies import get_crypto_fetcher
 
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ANN201 # unnecessarily complex return type
+    run_alembic_migrations()
+    setup_logging()
+    yield
+    fetcher = get_crypto_fetcher()
+    await fetcher.close_all()
 
-app = FastAPI()
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,9 +43,3 @@ async def validation_exception_handler(request: Request, exc: ValueError) -> JSO
 @app.exception_handler(ccxt.BaseError)
 async def ccxt_error(request: Request, exc: ccxt.BaseError) -> JSONResponse:
     return JSONResponse(status_code=400, content={"CCXT error:": str(exc)})
-
-
-# configure logging to include custom logging messages
-# if not configured, logging with logger.info etc. won't
-# output anything
-config.dictConfig(LOGGING_CONFIG)

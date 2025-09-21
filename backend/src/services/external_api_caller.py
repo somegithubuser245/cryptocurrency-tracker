@@ -60,5 +60,6 @@ class CryptoFetcher:
         tasks = []
         for exchange in self._exchanges.values():
             tasks.append(exchange.close())
+        logger.info("ON SHUTDOWN LIFESPAN CALLED!")
 
         await asyncio.gather(*tasks)

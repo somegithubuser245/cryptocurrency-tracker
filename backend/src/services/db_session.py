@@ -1,7 +1,13 @@
-import sqlalchemy as sa
-from config.config import PostgresDBSettings
-from sqlalchemy.orm import sessionmaker
+from typing import Annotated, Generator
 
-db_url = PostgresDBSettings().construct_url()
-db = sa.create_engine(db_url)
-Session = sessionmaker(bind=db)
+from config.database import engine
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+
+def get_session() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        yield session
+
+DBSessionDep = Annotated[Session, Depends(get_session)]
+

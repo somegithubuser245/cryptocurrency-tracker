@@ -3,6 +3,7 @@ import logging
 from background.batch_fetch_ohlc import BatchFetcherDependency
 from fastapi import APIRouter, BackgroundTasks
 from routes.models.schemas import PriceTicker
+from services.db_session import DBSessionDep
 from services.spread_calculator import SpreadCalculatorDependency
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,8 @@ async def get_all_spreads(
 async def init_pairs(
     batch_fetcher: BatchFetcherDependency,
     bg_tasks: BackgroundTasks,
+    db: DBSessionDep
 ) -> dict:
     logger.info("test!")
-    bg_tasks.add_task(batch_fetcher.init_pairs_db)
+    bg_tasks.add_task(batch_fetcher.init_pairs_db, db)
     return {"pairs init process started": True}

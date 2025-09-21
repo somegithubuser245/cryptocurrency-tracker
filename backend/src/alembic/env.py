@@ -1,15 +1,14 @@
 from logging.config import fileConfig
 
 from alembic import context
-from config.config import PostgresDBSettings
+from config.database import DB_URL
 from domain.models import Base
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-db_url = PostgresDBSettings().construct_url(use_alembic=True).render_as_string(hide_password=False)
-config.set_main_option("sqlalchemy.url", db_url)
+config.set_main_option("sqlalchemy.url", DB_URL)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

@@ -1,7 +1,6 @@
 from enum import StrEnum, auto
 
 from pydantic_settings import BaseSettings
-from sqlalchemy import URL
 
 
 class RedisSettings(BaseSettings):
@@ -13,26 +12,6 @@ class RedisSettings(BaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
-
-
-class PostgresDBSettings(BaseSettings):
-    POSTGRES_DB: str = "postgres"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "root"
-    DRIVER_NAME: str = "postgresql"
-    PORT: int = 5432
-
-    def construct_url(self, use_alembic: bool = False) -> URL:
-        host = "localhost" if use_alembic else "db"
-
-        return URL.create(
-            host=host,
-            port=self.PORT,
-            drivername=self.DRIVER_NAME,
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            database=self.POSTGRES_DB,
-        )
 
 
 CACHE_TTL_CONFIG: dict = {
