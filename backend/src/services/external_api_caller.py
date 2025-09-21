@@ -4,6 +4,8 @@ import logging
 import ccxt.async_support as ccxt
 from routes.models.schemas import PriceTicker
 
+logger = logging.getLogger(__name__)
+
 
 class CryptoFetcher:
     """
@@ -22,7 +24,7 @@ class CryptoFetcher:
                 request.interval,
             )
         except ccxt.BaseError as e:
-            logging.error(
+            logger.error(
                 f"""
                 Something went wrong when fetching ohlc for {request.crypto_id}
                 with {request.api_provider}
