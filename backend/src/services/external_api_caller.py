@@ -21,8 +21,14 @@ class CryptoFetcher:
                 request.crypto_id.replace("-", "/"),
                 request.interval,
             )
-        except ccxt.BaseError:
-            logging.info(f"Something went wrong when fetching ohlc for {request.crypto_id} with {request.api_provider}")
+        except ccxt.BaseError as e:
+            logging.error(
+                f"""
+                Something went wrong when fetching ohlc for {request.crypto_id}
+                with {request.api_provider}
+                Error: {str(e)}
+                """
+            )
             return None
 
     async def get_exchanges_with_markets(self, exchanges: list[str]) -> list[ccxt.Exchange]:

@@ -38,7 +38,6 @@ def insert_exchange_names(exchange_name: str, exchange_specific_symbols: list[st
             .scalars()
             .all()
         )
-        print(all_crypto_ids)
 
         db_readable_dict = [
             {"crypto_id": crypto_id, "supported_exchange": exchange_name}
@@ -48,5 +47,5 @@ def insert_exchange_names(exchange_name: str, exchange_specific_symbols: list[st
             stmt = insert(SupportedExchangesByCrypto).values(db_readable_dict)
             session.execute(stmt)
         except Exception:
-            print("blablalba")
+            pass
         session.commit()

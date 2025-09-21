@@ -1,11 +1,17 @@
+import logging
+from logging import config
+
 import ccxt
 import sqlalchemy
+from config.logs import LOGGING_CONFIG
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.scan_spreads import spreads_router
 
-# Setup
+logger = logging.getLogger(__name__)
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -19,15 +25,17 @@ app.add_middleware(
 app.include_router(spreads_router)
 
 
-@app.get("/db-version")
-def get_db_version() -> str:
-    return sqlalchemy.__version__
-
-
 @app.exception_handler(ValueError)
 async def validation_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
     return JSONResponse(status_code=400, content={"Some Value Error:": str(exc)})
 
+
 @app.exception_handler(ccxt.BaseError)
 async def ccxt_error(request: Request, exc: ccxt.BaseError) -> JSONResponse:
     return JSONResponse(status_code=400, content={"CCXT error:": str(exc)})
+
+
+# configure logging to include custom logging messages
+# if not configured, logging with logger.info etc. won't
+# output anything
+config.dictConfig(LOGGING_CONFIG)

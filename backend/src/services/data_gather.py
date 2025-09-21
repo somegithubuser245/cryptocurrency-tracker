@@ -1,11 +1,15 @@
 import asyncio
 import json
+from typing import Annotated
 
 from config.config import SUPPORTED_EXCHANGES
-from data_manipulation.exchanges_symbols_converter import Converter
+from data_manipulation.exchanges_symbols_converter import ConverterDependency
+from fastapi import Depends
 from routes.models.schemas import PriceTicker
-from services.caching import RedisClient
-from services.external_api_caller import CryptoFetcher
+from utils.dependencies.dependencies import (
+    CryptoFetcherDependency,
+    RedisClientDependency,
+)
 
 
 class DataManager:
@@ -15,7 +19,12 @@ class DataManager:
     If not, it will make calls to fetch it
     """
 
-    def __init__(self, redis_cacher: RedisClient, fetcher: CryptoFetcher, converter: Converter):
+    def __init__(
+        self,
+        redis_cacher: RedisClientDependency,
+        fetcher: CryptoFetcherDependency,
+        converter: ConverterDependency,
+    ) -> None:
         self.redis_cacher = redis_cacher
         self.fetcher = fetcher
         self.converter = converter
@@ -80,3 +89,6 @@ class DataManager:
     async def get_arbitrable_pairs(self) -> dict[str, list[str]]:
         exchanges = await self.fetcher.get_exchanges_with_markets(SUPPORTED_EXCHANGES.values())
         return self.converter.get_list_like(exchanges)
+
+
+DataManagerDependency = Annotated[DataManager, Depends()]

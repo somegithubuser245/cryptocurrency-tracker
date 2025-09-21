@@ -1,6 +1,9 @@
+from typing import Annotated
+
 import ccxt.async_support as ccxt
 import numpy as np
 import pandas as pd
+from fastapi import Depends
 
 
 class Converter:
@@ -53,3 +56,6 @@ class Converter:
 
         # drop based on min exchanges available parameter
         return left_merge_frame.dropna(thresh=min_exchanges_available)
+
+
+ConverterDependency = Annotated[Converter, Depends()]

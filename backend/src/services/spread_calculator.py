@@ -1,10 +1,13 @@
+from typing import Annotated
+
 from data_manipulation.spread_object import Spread
-from data_manipulation.timeframes_equalizer import TimeframeSynchronizer
+from data_manipulation.timeframes_equalizer import TimeframesSyncDependency
+from fastapi import Depends
 from routes.models.schemas import PriceTicker
 
 
 class SpreadCalculator:
-    def __init__(self, timeframe_synchronizer: TimeframeSynchronizer) -> None:
+    def __init__(self, timeframe_synchronizer: TimeframesSyncDependency) -> None:
         self.synchronizer = timeframe_synchronizer
 
     async def create(
@@ -16,3 +19,6 @@ class SpreadCalculator:
         aligned = self.synchronizer.sync_many(all_timeseries)
 
         return Spread(pair_name=pair.crypto_id, raw_frames=aligned, exchange_names=exchange_names)
+
+
+SpreadCalculatorDependency = Annotated[SpreadCalculator, Depends()]

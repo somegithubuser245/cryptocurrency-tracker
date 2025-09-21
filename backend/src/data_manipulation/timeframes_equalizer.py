@@ -1,6 +1,8 @@
 import logging
+from typing import Annotated
 
 import pandas as pd
+from fastapi import Depends
 
 
 class TimeframeSynchronizer:
@@ -30,23 +32,14 @@ class TimeframeSynchronizer:
 
         return (result1, result2)
 
-    def sync_many(
-        self,
-        ohlc_data_entries: list[list[list[float]]]
-    ) -> list[pd.DataFrame]:
+    def sync_many(self, ohlc_data_entries: list[list[list[float]]]) -> list[pd.DataFrame]:
         dataframes_raw: list[pd.DataFrame] = []
         for ohlc_entry in ohlc_data_entries:
-            print(len(ohlc_entry[0]))
-            print(len(self._cnames))
-
             if len(ohlc_entry[0]) != len(self._cnames):
                 logging.info("OHLC CORRUPTED! SKIPPING")
                 continue
 
-            df = pd.DataFrame(
-                ohlc_entry,
-                columns=self._cnames
-            ).set_index(self._cnames[0])
+            df = pd.DataFrame(ohlc_entry, columns=self._cnames).set_index(self._cnames[0])
             df.index = pd.to_datetime(df.index, unit="ms", origin="unix", utc=True)
             dataframes_raw.append(df)
 
@@ -55,3 +48,5 @@ class TimeframeSynchronizer:
             common_index = df.index.intersection(common_index)
 
         return [df.loc[common_index] for df in dataframes_raw]
+
+TimeframesSyncDependency = Annotated[TimeframeSynchronizer, Depends()]
