@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from background.batch_fetch_ohlc import BatchFetcherDependency
 from fastapi import APIRouter, BackgroundTasks
@@ -31,12 +32,19 @@ async def get_all_spreads(
     return {"background task added": True}
 
 
-@spreads_router.get("/init-pairs")
+@spreads_router.post("/init-pairs")
 async def init_pairs(
     batch_fetcher: BatchFetcherDependency,
     bg_tasks: BackgroundTasks,
     db: DBSessionDep
 ) -> dict:
-    logger.info("test!")
     bg_tasks.add_task(batch_fetcher.init_pairs_db, db)
     return {"pairs init process started": True}
+
+@spreads_router.get("/with-threshold/{threshold}")
+async def get_arbitrable_pairs(
+    batch_fetcher: BatchFetcherDependency,
+    db: DBSessionDep,
+    threshold: int
+) -> list[int]:
+    return await batch_fetcher.get_all_pairs_threshold(threshold=threshold, db=db)

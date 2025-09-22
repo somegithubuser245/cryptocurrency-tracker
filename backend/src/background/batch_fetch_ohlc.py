@@ -2,7 +2,11 @@ import asyncio
 import logging
 from typing import Annotated
 
-from background.db_pairs import insert_exchange_names, insert_or_update_pairs
+from background.db_pairs import (
+    get_arbitrable_with_threshold,
+    insert_exchange_names,
+    insert_or_update_pairs,
+)
 from config.config import SUPPORTED_EXCHANGES
 from fastapi import Depends
 from routes.models.schemas import PriceTicker
@@ -36,6 +40,12 @@ class BatchFetcher:
             exchange_symbols = exchange.symbols
             insert_or_update_pairs(exchange.symbols, db)
             insert_exchange_names(exchange_name, exchange_symbols, db)
+
+    async def get_all_pairs_threshold(self, threshold: int, db: DBSessionDep) -> list[int]:
+        # state management!
+        # how do i know if the pairs have been initted already?
+        # await self.init_pairs_db(db=db)
+        return get_arbitrable_with_threshold(threshold=threshold, session=db)
 
     async def init_tickers_and_ids(self) -> tuple[list, str]:
         arbitrable_pairs_with_exchanges = await self.data_manager.get_arbitrable_pairs()

@@ -1,8 +1,11 @@
+import logging
+
 from domain.models import CryptoPairName, SupportedExchangesByCrypto
 from services.db_session import DBSessionDep
-from sqlalchemy import insert, select
+from sqlalchemy import func, insert, select
 from sqlalchemy.dialects.postgresql import insert as upsert
 
+logger = logging.getLogger(__name__)
 
 def insert_or_update_pairs(pairs: list[str], session: DBSessionDep) -> None:
     """
@@ -55,3 +58,16 @@ def insert_exchange_names(
     except Exception:
         pass
     session.commit()
+
+
+def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list[int]:
+    """
+    Find all pairs with at least @threshold available exchanges
+    """
+    stmt = (
+        select(SupportedExchangesByCrypto.crypto_id)
+        .group_by(SupportedExchangesByCrypto.crypto_id)
+        .having(func.count(SupportedExchangesByCrypto.crypto_id) >= threshold)
+    )
+    result = session.execute(stmt).scalars().all()
+    return list(result)
