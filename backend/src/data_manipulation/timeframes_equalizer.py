@@ -1,10 +1,15 @@
+import logging
+from typing import Annotated
+
 import pandas as pd
-from functools import reduce
+from fastapi import Depends
+
+logger = logging.getLogger(__name__)
 
 
 class TimeframeSynchronizer:
     def __init__(self) -> None:
-        self.cnames = ["time", "open", "high", "low", "close", "volume"]
+        self._cnames = ["time", "open", "high", "low", "close", "volume"]
 
     def sync_two(
         self,
@@ -28,17 +33,15 @@ class TimeframeSynchronizer:
         result2 = sorted2.reset_index().assign(time=lambda x: x["time"] / 1000).to_dict("records")
 
         return (result1, result2)
-    
-    def sync_many(
-        self,
-        ohlc_data_entries: list[list[list[float]]]
-    ) -> list[pd.DataFrame]:
+
+    def sync_many(self, ohlc_data_entries: list[list[list[float]]]) -> list[pd.DataFrame]:
         dataframes_raw: list[pd.DataFrame] = []
         for ohlc_entry in ohlc_data_entries:
-            df = pd.DataFrame(
-                ohlc_entry,
-                columns=self.cnames
-            ).set_index(self.cnames[0])
+            if len(ohlc_entry[0]) != len(self._cnames):
+                logger.info("OHLC CORRUPTED! SKIPPING")
+                continue
+
+            df = pd.DataFrame(ohlc_entry, columns=self._cnames).set_index(self._cnames[0])
             df.index = pd.to_datetime(df.index, unit="ms", origin="unix", utc=True)
             dataframes_raw.append(df)
 
@@ -47,3 +50,5 @@ class TimeframeSynchronizer:
             common_index = df.index.intersection(common_index)
 
         return [df.loc[common_index] for df in dataframes_raw]
+
+TimeframesSyncDependency = Annotated[TimeframeSynchronizer, Depends()]

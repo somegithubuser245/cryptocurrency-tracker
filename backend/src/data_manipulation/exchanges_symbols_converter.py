@@ -1,6 +1,14 @@
+### DEPRICATED
+###
+### This class isn't used anymore, as now db handles extraction
+### of pairs with min. available exchanges parameter
+
+from typing import Annotated
+
 import ccxt.async_support as ccxt
 import numpy as np
 import pandas as pd
+from fastapi import Depends
 
 
 class Converter:
@@ -45,6 +53,7 @@ class Converter:
 
         left_merge_frame = symbols_frames_raw[0]
 
+        # TODO concat should be a better way...
         for right_merge_frame in symbols_frames_raw[1:]:
             left_merge_frame = left_merge_frame.merge(
                 right_merge_frame, how="outer", left_index=True, right_index=True
@@ -52,3 +61,6 @@ class Converter:
 
         # drop based on min exchanges available parameter
         return left_merge_frame.dropna(thresh=min_exchanges_available)
+
+
+ConverterDependency = Annotated[Converter, Depends()]

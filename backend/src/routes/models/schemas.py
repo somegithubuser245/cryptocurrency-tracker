@@ -1,16 +1,10 @@
-from config.config import SUPPORTED_EXCHANGES, SUPPORTED_PAIRS, TIME_RANGES, Exchange
 from pydantic import BaseModel
 
-config_types: dict[str, dict] = {
-    "timeranges": TIME_RANGES,
-    "pairs": SUPPORTED_PAIRS,
-    "exchanges": SUPPORTED_EXCHANGES,
-}
 
 class RedisCacheble(BaseModel):
     def construct_key(self) -> str:
         raise NotImplementedError
-    
+
     def separate_strings_with_colons(self, *parameters: list[str]) -> str:
         key = ""
         for index, parameter in enumerate(parameters):
@@ -18,22 +12,8 @@ class RedisCacheble(BaseModel):
         return key
 
 
-class CompareRequest(RedisCacheble):
-    exchange1: Exchange
-    exchange2: Exchange
-    crypto_id: str
+class PriceTicker(RedisCacheble):
+    crypto_id: int | None = None
+    crypto_name: str
+    exchange_name: str
     interval: str = "1h"
-
-    def construct_key(self):
-        return super().separate_strings_with_colons(
-            *self.model_dump().values()
-        )
-
-
-class PriceTickerRequest(RedisCacheble):
-    crypto_id: str
-    interval: str = "1h"
-    api_provider: Exchange
-
-    def construct_key(self):
-        return f"{self.api_provider}:{self.crypto_id}:{self.interval}"

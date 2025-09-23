@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Spread:
     def __init__(
         self,
@@ -25,14 +26,14 @@ class Spread:
             index=spreads_series.index
         )
 
-    def _calculate_max_spread_per_row(self, x: pd.Series):
+    def _calculate_max_spread_per_row(self, x: pd.Series) -> tuple[int | str]:
         max, min = x.max(), x.min()
         max_exchange_name, min_exchange_name = x.idxmax(), x.idxmin()
-    
+
         spread = max - min
         spread_percent = spread / ((max + min) / 2) * 100
         return spread, spread_percent, max_exchange_name, min_exchange_name
-    
+
     # api-ready dicts
     def get_max_spread(self) -> dict:
         # reset index
@@ -40,10 +41,9 @@ class Spread:
         # this is the only reason for conversion
         unindexed = self.spreads_df.reset_index()
         max_timestamp = unindexed["spread"].idxmax()
-        
+
         return unindexed.loc[max_timestamp].to_dict()
-    
+
     def get_as_dict(self) -> dict:
         return self.spreads_df.to_dict(orient="index")
 
-    

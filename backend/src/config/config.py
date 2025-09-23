@@ -1,13 +1,9 @@
-import logging
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
 
 from pydantic_settings import BaseSettings
 
-# most straightforward way to show logs in uvicorn
-logger = logging.getLogger("uvicorn.error")
 
-
-class Settings(BaseSettings):
+class RedisSettings(BaseSettings):
     """This is a pydantic settings class
     You can define your own .env
     If not, pydantic defaults
@@ -17,8 +13,17 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
 
+class CryptoBatchSettings(BaseSettings):
+    DEFAULT_THRESHOLD: int = 2 # min amount of supported exchanges per pair
+    DEFAULT_INTERVAL: str = "1h" # just arbitrary, idk the best granularity
 
-settings = Settings()
+    DEFAULT_CHUNK_SIZE: int = 100 # arbitrary as well, seems managable
+    DEFAULT_OHLC_TTL: int = 1000
+
+     # arbitrary, used for sleep between batches
+     # when ohlc is downloaded from external api
+     # with http client
+    DEFAULT_SLEEP_TIME: float = 1
 
 
 CACHE_TTL_CONFIG: dict = {
@@ -32,7 +37,7 @@ CACHE_TTL_CONFIG: dict = {
 }
 
 
-class Exchange(str, Enum):
+class Exchange(StrEnum):
     BINANCE = "binance"
     OKX = "okx"
     BYBIT = "bybit"
@@ -58,24 +63,4 @@ TIME_RANGES: dict = {
     "1d": "Daily",
     "1w": "Weekly",
     "1M": "Monthly",
-}
-
-SUPPORTED_PAIRS: dict = {
-    "BTC-USDT": "Bitcoin",
-    "ETH-USDT": "Ethereum",
-    "SOL-USDT": "Solana",
-    "ADA-USDT": "Cardano",
-    "AVAX-USDT": "Avalanche",
-    "DOT-USDT": "Polkadot",
-    "DOGE-USDT": "Dogecoin",
-    "SHIB-USDT": "Shiba Inu",
-    "LTC-USDT": "Litecoin",
-    "BCH-USDT": "Bitcoin Cash",
-    "ETC-USDT": "Ethereum Classic",
-    "XRP-USDT": "Ripple",
-    "TRX-USDT": "Tron",
-    "LINK-USDT": "Chainlink",
-    "UNI-USDT": "Uniswap",
-    "AAVE-USDT": "Aave",
-    "XEM-USDT": "XEM",
 }

@@ -13,6 +13,12 @@ python-dotenv
 httpx
 
 # backend data handling
+celery
 pandas
 numpy
 ccxt
+
+# shared
+alembic
+SQLAlchemy
+psycopg2
