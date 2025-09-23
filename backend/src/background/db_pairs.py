@@ -56,8 +56,9 @@ def insert_exchange_names(
     try:
         stmt = insert(SupportedExchangesByCrypto).values(db_readable_dict)
         session.execute(stmt)
-    except Exception:
-        pass
+    except Exception as e:
+        msg = f"Failed to insert exchange names for {exchange_name}"
+        logger.exception(msg)
     session.commit()
 
 

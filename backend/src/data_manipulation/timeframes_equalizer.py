@@ -4,6 +4,8 @@ from typing import Annotated
 import pandas as pd
 from fastapi import Depends
 
+logger = logging.getLogger(__name__)
+
 
 class TimeframeSynchronizer:
     def __init__(self) -> None:
@@ -36,7 +38,7 @@ class TimeframeSynchronizer:
         dataframes_raw: list[pd.DataFrame] = []
         for ohlc_entry in ohlc_data_entries:
             if len(ohlc_entry[0]) != len(self._cnames):
-                logging.info("OHLC CORRUPTED! SKIPPING")
+                logger.info("OHLC CORRUPTED! SKIPPING")
                 continue
 
             df = pd.DataFrame(ohlc_entry, columns=self._cnames).set_index(self._cnames[0])

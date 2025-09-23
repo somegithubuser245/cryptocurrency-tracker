@@ -41,6 +41,6 @@ class RedisClient:
         try:
             self.redis_client.set("health", "true", 1)
             return self.redis_client.get("health") == b"true"
-        except (redis.RedisError, redis.TimeoutError):
-            logger.error("REDIS CLIENT UNAVAILABLE")
+        except (redis.RedisError, redis.TimeoutError) as e:
+            logger.error(f"REDIS CLIENT UNAVAILABLE: {e}")
             return False

@@ -14,7 +14,7 @@ class RedisSettings(BaseSettings):
     REDIS_DB: int = 0
 
 class CryptoBatchSettings(BaseSettings):
-    DEFAULT_THRESHOLD: int = 2 # min amount of supported ecxhanges per pair
+    DEFAULT_THRESHOLD: int = 2 # min amount of supported exchanges per pair
     DEFAULT_INTERVAL: str = "1h" # just arbitrary, idk the best granularity
 
     DEFAULT_CHUNK_SIZE: int = 100 # arbitrary as well, seems managable
