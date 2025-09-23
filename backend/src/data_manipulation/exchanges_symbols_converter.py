@@ -1,3 +1,8 @@
+### DEPRICATED
+###
+### This class isn't used anymore, as now db handles extraction
+### of pairs with min. available exchanges parameter
+
 from typing import Annotated
 
 import ccxt.async_support as ccxt

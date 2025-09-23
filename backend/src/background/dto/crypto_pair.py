@@ -33,11 +33,11 @@ class CryptoPair:
 
         Which will fetch the OHLC with the current class parameters
         """
-        return crypto_fetcher.get_ohlc_parameterised(
+        return await crypto_fetcher.get_ohlc_parameterised(
             crypto_name=self.crypto_name,
             exchange_name=self.supported_exchange,
             interval=self.interval
         )
 
-    def get_stats(self) -> str:
-        return f"{self.crypto_id}:{self.crypto_name}:{self.supported_exchange}"
+    def __repr__(self) -> str:
+        return f"OHLC:{self.crypto_id}:{self.supported_exchange}:{self.interval}"

@@ -18,6 +18,12 @@ class CryptoBatchSettings(BaseSettings):
     DEFAULT_INTERVAL: str = "1h" # just arbitrary, idk the best granularity
 
     DEFAULT_CHUNK_SIZE: int = 100 # arbitrary as well, seems managable
+    DEFAULT_OHLC_TTL: int = 1000
+
+     # arbitrary, used for sleep between batches
+     # when ohlc is downloaded from external api
+     # with http client
+    DEFAULT_SLEEP_TIME: float = 1
 
 
 CACHE_TTL_CONFIG: dict = {

@@ -1,8 +1,9 @@
 import logging
+from typing import Tuple
 
 from domain.models import CryptoPairName, SupportedExchangesByCrypto
 from services.db_session import DBSessionDep
-from sqlalchemy import func, insert, select
+from sqlalchemy import Row, Sequence, func, insert, select
 from sqlalchemy.dialects.postgresql import insert as upsert
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,10 @@ def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list
     result = session.execute(stmt).scalars().all()
     return list(result)
 
-def get_params_for_crypto_dto(ids_list: list[int], session: DBSessionDep):
+def get_params_for_crypto_dto(
+        ids_list: list[int],
+        session: DBSessionDep
+    ) -> Sequence[Row[Tuple[int, str, str]]]:
     """
     Returns tuples in following order:
 
@@ -90,5 +94,6 @@ def get_params_for_crypto_dto(ids_list: list[int], session: DBSessionDep):
         ).join(SupportedExchangesByCrypto,
                CryptoPairName.id == SupportedExchangesByCrypto.crypto_id
         ).where(CryptoPairName.id.in_(ids_list))
+        .order_by(CryptoPairName.id)
     )
     return session.execute(stmt).all()

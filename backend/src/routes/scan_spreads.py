@@ -11,9 +11,12 @@ spreads_router = APIRouter(prefix="/spreads")
 @spreads_router.get("/all-at-once")
 async def get_all_spreads(
     batch_fetcher: BatchFetcherDependency,
+    db: DBSessionDep,
     bg_tasks: BackgroundTasks,
 ) -> dict:
-    bg_tasks.add_task(batch_fetcher.download_all_ohlc())
+    await batch_fetcher.download_all_ohlc(
+        db=db,
+    )
     return {"background task added": True}
 
 

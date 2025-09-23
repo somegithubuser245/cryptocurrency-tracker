@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 from typing import Annotated
 
@@ -11,12 +12,12 @@ from background.db_pairs import (
 from background.dto.crypto_pair import CryptoPair
 from config.config import SUPPORTED_EXCHANGES, CryptoBatchSettings
 from fastapi import Depends
-from routes.models.schemas import PriceTicker
 from services.data_gather import DataManagerDependency
 from services.db_session import DBSessionDep
 from utils.dependencies.dependencies import CryptoFetcherDependency, RedisClientDependency
 
 logger = logging.getLogger(__name__)
+batch_settings = CryptoBatchSettings()
 
 
 class BatchFetcher:
@@ -46,8 +47,8 @@ class BatchFetcher:
     def create_arb_pairs_objects(
             self,
             db: DBSessionDep,
-            threshold: int = CryptoBatchSettings().DEFAULT_THRESHOLD
-        ) -> list:
+            threshold: int | None
+        ) -> list[CryptoPair]:
         """
         Get all arbitrable pair objects
 
@@ -59,6 +60,7 @@ class BatchFetcher:
         # TODO: create a master state machine for general init statuses
         # e.g. initted all pairs, initted all exchange names, etc.
 
+        threshold = threshold or batch_settings.DEFAULT_THRESHOLD
 
         # get pairs data with threshold applied
         all_ids = get_arbitrable_with_threshold(threshold=threshold, session=db)
@@ -72,13 +74,36 @@ class BatchFetcher:
         in crypto_pairs_tuples ]
 
 
-    async def download_all_ohlc(self) -> None:
-        pass
+    async def download_all_ohlc(
+        self,
+        db: DBSessionDep,
+        threshold: int | None = None
+    ) -> None:
+        """
+        Download and save all ohcl in Redis
 
+        All in this case means
+        all arbitrable pairs with predefined threshold
+        """
+        crypto_dto_list = self.create_arb_pairs_objects(db=db, threshold=threshold)
+        dtos_length = len(crypto_dto_list)
 
-    def log_info(self, ch_start: int, ch_end: int, downloaded_ohlc: list[str]) -> None:
-        msg = f"chunk start: {ch_start}, chunk_end: {ch_end}, downloaded_ohlc: {downloaded_ohlc}"
-        logger.info(msg)
+        for i in range(0, dtos_length, self.CHUNK_SIZE):
+            chunk_end = min(i + self.CHUNK_SIZE, dtos_length)
+            dto_chunk = crypto_dto_list[i:chunk_end]
+
+            tasks = [dto.get_ohlc(self.external_api_caller) for dto in dto_chunk]
+            # asyncio.gather returns the list saving the initial sequence
+            ordered_ohlc = await asyncio.gather(*tasks)
+
+            for dto, ohlc in zip(dto_chunk, ordered_ohlc, strict=True):
+                self.redis_client.set(
+                    key=str(dto),
+                    data=json.dumps(ohlc),
+                    ttl=batch_settings.DEFAULT_OHLC_TTL
+                )
+
+            await asyncio.sleep(batch_settings.DEFAULT_SLEEP_TIME)
 
 
 async def get_batch_fetcher(
@@ -90,7 +115,7 @@ async def get_batch_fetcher(
         data_manager=data_manager,
         redis_client=redis_client,
         external_api_caller=external_api_caller,
-        chunk_size=CryptoBatchSettings().DEFAULT_CHUNK_SIZE,
+        chunk_size=batch_settings.DEFAULT_CHUNK_SIZE,
     )
 
 
