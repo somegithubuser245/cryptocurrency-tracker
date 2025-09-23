@@ -63,6 +63,10 @@ def insert_exchange_names(
 def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list[int]:
     """
     Find all pairs with at least @threshold available exchanges
+
+    Returns
+    ____
+    The list of all crypto ids found
     """
     stmt = (
         select(SupportedExchangesByCrypto.crypto_id)
@@ -71,3 +75,20 @@ def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list
     )
     result = session.execute(stmt).scalars().all()
     return list(result)
+
+def get_params_for_crypto_dto(ids_list: list[int], session: DBSessionDep):
+    """
+    Returns tuples in following order:
+
+    ID, name, supported exchange
+    """
+    stmt = (
+        select(
+            CryptoPairName.id,
+            CryptoPairName.crypto_name,
+            SupportedExchangesByCrypto.supported_exchange
+        ).join(SupportedExchangesByCrypto,
+               CryptoPairName.id == SupportedExchangesByCrypto.crypto_id
+        ).where(CryptoPairName.id.in_(ids_list))
+    )
+    return session.execute(stmt).all()

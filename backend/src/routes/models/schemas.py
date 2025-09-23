@@ -1,4 +1,3 @@
-from config.config import Exchange
 from pydantic import BaseModel
 
 
@@ -14,19 +13,7 @@ class RedisCacheble(BaseModel):
 
 
 class PriceTicker(RedisCacheble):
-    crypto_id: str
+    crypto_id: int | None = None
+    crypto_name: str
+    exchange_name: str
     interval: str = "1h"
-    api_provider: Exchange
-    supported_exchanges: list[Exchange] | None = None
-
-    def construct_key(self):
-        return f"{self.api_provider}:{self.crypto_id}:{self.interval}"
-
-    @classmethod
-    def generate_with_many_exchanges(
-        cls, crypto_id: str, interval: str, exchange_names: list[Exchange]
-    ) -> list["PriceTicker"]:
-        return [
-            PriceTicker(crypto_id=crypto_id, interval=interval, api_provider=exchange_name)
-            for exchange_name in exchange_names
-        ]

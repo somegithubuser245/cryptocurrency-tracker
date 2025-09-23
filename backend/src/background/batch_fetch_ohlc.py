@@ -4,10 +4,12 @@ from typing import Annotated
 
 from background.db_pairs import (
     get_arbitrable_with_threshold,
+    get_params_for_crypto_dto,
     insert_exchange_names,
     insert_or_update_pairs,
 )
-from config.config import SUPPORTED_EXCHANGES
+from background.dto.crypto_pair import CryptoPair
+from config.config import SUPPORTED_EXCHANGES, CryptoBatchSettings
 from fastapi import Depends
 from routes.models.schemas import PriceTicker
 from services.data_gather import DataManagerDependency
@@ -41,42 +43,38 @@ class BatchFetcher:
             insert_or_update_pairs(exchange.symbols, db)
             insert_exchange_names(exchange_name, exchange_symbols, db)
 
-    async def get_all_pairs_threshold(self, threshold: int, db: DBSessionDep) -> list[int]:
+    def create_arb_pairs_objects(
+            self,
+            db: DBSessionDep,
+            threshold: int = CryptoBatchSettings().DEFAULT_THRESHOLD
+        ) -> list:
+        """
+        Get all arbitrable pair objects
+
+        Specify the threshold to be applied.
+        I.e. min. amount of exchanges, which support this pair
+        """
         # state management!
         # how do i know if the pairs have been initted already?
-        # await self.init_pairs_db(db=db)
-        return get_arbitrable_with_threshold(threshold=threshold, session=db)
+        # TODO: create a master state machine for general init statuses
+        # e.g. initted all pairs, initted all exchange names, etc.
 
-    async def init_tickers_and_ids(self) -> tuple[list, str]:
-        arbitrable_pairs_with_exchanges = await self.data_manager.get_arbitrable_pairs()
-        crypto_ids = list(arbitrable_pairs_with_exchanges.keys())
-        crypto_pairs_tickers = []
 
-        for crypto_id, supported_exchanges in arbitrable_pairs_with_exchanges.items():
-            crypto_pairs_tickers.extend(
-                PriceTicker.generate_with_many_exchanges(
-                    crypto_id=crypto_id, interval="4h", exchange_names=supported_exchanges
-                )
-            )
+        # get pairs data with threshold applied
+        all_ids = get_arbitrable_with_threshold(threshold=threshold, session=db)
+        crypto_pairs_tuples = get_params_for_crypto_dto(ids_list=all_ids, session=db)
 
-        return crypto_pairs_tickers, crypto_ids
+        return [ CryptoPair(
+            crypto_id=crypto_id,
+            crypto_name=crypto_name,
+            supported_exchange=supported_exchange
+        ) for crypto_id, crypto_name, supported_exchange
+        in crypto_pairs_tuples ]
 
-    async def download_all_in_chunks(self) -> None:
-        downloaded_ohlc_results = {}
-        crypto_pairs_tickers, crypto_ids = await self.init_tickers_and_ids()
 
-        crypto_pairs_len = len(crypto_pairs_tickers)
+    async def download_all_ohlc(self) -> None:
+        pass
 
-        for i in range(0, crypto_pairs_len, self.CHUNK_SIZE):
-            chunk_end = min(i + self.CHUNK_SIZE, crypto_pairs_len)
-
-            tickers_chunk = crypto_pairs_tickers[i:chunk_end]
-            downloaded_ohlc = await self.data_manager.get_ohlc_data_cached(tickers_chunk)
-            downloaded_ohlc_results.update(downloaded_ohlc)
-
-            await asyncio.sleep(0.5)
-
-        return downloaded_ohlc_results
 
     def log_info(self, ch_start: int, ch_end: int, downloaded_ohlc: list[str]) -> None:
         msg = f"chunk start: {ch_start}, chunk_end: {ch_end}, downloaded_ohlc: {downloaded_ohlc}"
@@ -92,7 +90,7 @@ async def get_batch_fetcher(
         data_manager=data_manager,
         redis_client=redis_client,
         external_api_caller=external_api_caller,
-        chunk_size=100,
+        chunk_size=CryptoBatchSettings().DEFAULT_CHUNK_SIZE,
     )
 
 

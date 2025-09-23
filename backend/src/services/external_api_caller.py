@@ -15,19 +15,32 @@ class CryptoFetcher:
     def __init__(self) -> None:
         self._exchanges: dict[str, ccxt.Exchange] = {}
 
-    async def get_ohlc(self, request: PriceTicker) -> list[list[float]]:
-        exchange = self._get_saved_exchange(request.api_provider.value)
+    async def get_ohlc_with_request(self, request: PriceTicker) -> list[list[float]]:
+        return self.get_ohlc_parameterised(
+            crypto_name=request.crypto_name.replace("-", "/"),
+            exchange_name=request.exchange_name,
+            interval=request.interval
+        )
+
+    async def get_ohlc_parameterised(
+        self,
+        *,
+        crypto_name: str,
+        exchange_name: str,
+        interval: str,
+    ) -> list[list[float]]:
+        exchange = self._get_saved_exchange(exchange_name)
 
         try:
             return await exchange.fetch_ohlcv(
-                request.crypto_id.replace("-", "/"),
-                request.interval,
+                crypto_name,
+                interval,
             )
         except ccxt.BaseError as e:
             logger.error(
                 f"""
-                Something went wrong when fetching ohlc for {request.crypto_id}
-                with {request.api_provider}
+                Something went wrong when fetching ohlc for {crypto_name}
+                with {exchange_name}
                 Error: {str(e)}
                 """
             )

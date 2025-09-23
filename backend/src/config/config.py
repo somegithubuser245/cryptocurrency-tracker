@@ -13,6 +13,12 @@ class RedisSettings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
 
+class CryptoBatchSettings(BaseSettings):
+    DEFAULT_THRESHOLD: int = 2 # min amount of supported ecxhanges per pair
+    DEFAULT_INTERVAL: str = "1h" # just arbitrary, idk the best granularity
+
+    DEFAULT_CHUNK_SIZE: int = 100 # arbitrary as well, seems managable
+
 
 CACHE_TTL_CONFIG: dict = {
     "5m": 300,
