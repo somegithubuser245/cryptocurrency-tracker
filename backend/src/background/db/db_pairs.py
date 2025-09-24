@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 
-from domain.models import CryptoPairName, SupportedExchangesByCrypto
+from domain.models import BatchStatus, CryptoPairName, SupportedExchangesByCrypto
 from services.db_session import DBSessionDep
 from sqlalchemy import Row, Sequence, func, insert, select
 from sqlalchemy.dialects.postgresql import insert as upsert
@@ -72,8 +72,14 @@ def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list
     """
     stmt = (
         select(SupportedExchangesByCrypto.crypto_id)
-        .group_by(SupportedExchangesByCrypto.crypto_id)
+        .group_by(SupportedExchangesByCrypto.crypto_id,)
         .having(func.count(SupportedExchangesByCrypto.crypto_id) >= threshold)
+    )
+    result = session.execute(stmt).scalars().all()
+
+    stmt = (
+        select(SupportedExchangesByCrypto.id)
+        .where(SupportedExchangesByCrypto.crypto_id.in_(result))
     )
     result = session.execute(stmt).scalars().all()
     return list(result)
@@ -89,12 +95,16 @@ def get_params_for_crypto_dto(
     """
     stmt = (
         select(
-            CryptoPairName.id,
+            SupportedExchangesByCrypto.id,
             CryptoPairName.crypto_name,
             SupportedExchangesByCrypto.supported_exchange
-        ).join(SupportedExchangesByCrypto,
+        ).join(CryptoPairName,
                CryptoPairName.id == SupportedExchangesByCrypto.crypto_id
-        ).where(CryptoPairName.id.in_(ids_list))
+        ).where(SupportedExchangesByCrypto.id.in_(ids_list))
+        # the order in which the ids are returned is very important
+        # we must order by id to have different exchanges for an id first
+        # otherwise we'll have all crypto pairs for one exchange only first
+        # which isn't useful if we're comparing ohlc between different exchanges
         .order_by(CryptoPairName.id)
     )
     return session.execute(stmt).all()

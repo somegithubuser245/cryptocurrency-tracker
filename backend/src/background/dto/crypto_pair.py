@@ -1,4 +1,3 @@
-from config.config import CryptoBatchSettings
 from utils.dependencies.dependencies import CryptoFetcherDependency
 
 
@@ -6,23 +5,15 @@ class CryptoPair:
     def __init__(
         self,
         *,
-        crypto_id: int,
+        crypto_id_exchange_unique: int,
         crypto_name: str,
         supported_exchange: str,
+        interval: str
     ) -> None:
-        self.crypto_id = crypto_id
+        self.crypto_id = crypto_id_exchange_unique
         self.crypto_name = crypto_name
         self.supported_exchange = supported_exchange
-        self.interval = self._get_current_default_interval()
-
-    def _get_current_default_interval(self) -> str:
-        """
-        Currently just returns the DEFAULT INTERVAL
-
-        It's planned to receive it from DB with user-based
-        default setting later
-        """
-        return CryptoBatchSettings().DEFAULT_INTERVAL
+        self.interval = interval
 
     async def get_ohlc(
         self,

@@ -24,3 +24,16 @@ class SupportedExchangesByCrypto(Base):
     crypto_id: Mapped[int] = mapped_column(ForeignKey("crypto_pairs_names.id"))
     supported_exchange: Mapped[str] = mapped_column(nullable=False, index=True)
     crypto_names: Mapped["CryptoPairName"] = relationship(back_populates="supported_exchanges")
+
+class BatchStatus(Base):
+    __tablename__ = "batch_status"
+
+    id: Mapped[int] = mapped_column(
+        ForeignKey(SupportedExchangesByCrypto.id),
+        primary_key=True,
+    )
+    interval: Mapped[str] = mapped_column(nullable=False)
+    # actual status columns
+    saved_cache: Mapped[bool] = mapped_column(nullable=False)
+    difference_found: Mapped[bool] = mapped_column(nullable=False)
+    saved_db: Mapped[bool] = mapped_column(nullable=False)

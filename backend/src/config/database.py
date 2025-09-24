@@ -33,6 +33,7 @@ engine = create_engine(DB_URL)
 def run_alembic_migrations() -> None:
     alembic_config_path = Path.cwd() / "alembic.ini"
     alembic_cfg = Config(alembic_config_path)
+    alembic_cfg.set_main_option("sqlalchemy.url", DB_URL)
     with engine.begin() as connection:
         alembic_cfg.attributes["connection"] = connection
         command.upgrade(alembic_cfg, "head")
