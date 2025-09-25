@@ -1,10 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
-from logging import config
 
 import ccxt
 from config.database import run_alembic_migrations
-from config.logs import LOGGING_CONFIG, setup_logging
+from config.logs import setup_logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +11,7 @@ from routes.scan_spreads import spreads_router
 from utils.dependencies.dependencies import get_crypto_fetcher
 
 logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ANN201 # unnecessarily complex return type

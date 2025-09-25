@@ -12,9 +12,10 @@ class PostgresDBSettings(BaseSettings):
     POSTGRES_PASSWORD: str = "root"
     DRIVER_NAME: str = "postgresql"
     PORT: int = 5432
+    USE_ALEMBIC_LOCAL: bool = True
 
-    def construct_url(self, use_alembic: bool = False) -> URL:
-        host = "localhost" if use_alembic else "db"
+    def construct_url(self) -> URL:
+        host = "localhost" if self.USE_ALEMBIC_LOCAL else "db"
 
         return URL.create(
             host=host,
@@ -25,14 +26,16 @@ class PostgresDBSettings(BaseSettings):
             database=self.POSTGRES_DB,
         )
 
+
 DB_URL = PostgresDBSettings().construct_url().render_as_string(hide_password=False)
-DB_URL_ALEMBIC = PostgresDBSettings().construct_url(use_alembic=True).render_as_string(hide_password=False)
+
 engine = create_engine(DB_URL)
 
 
 def run_alembic_migrations() -> None:
     alembic_config_path = Path.cwd() / "alembic.ini"
     alembic_cfg = Config(alembic_config_path)
+    alembic_cfg.set_main_option("sqlalchemy.url", DB_URL)
     with engine.begin() as connection:
         alembic_cfg.attributes["connection"] = connection
         command.upgrade(alembic_cfg, "head")
