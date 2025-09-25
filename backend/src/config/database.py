@@ -12,10 +12,10 @@ class PostgresDBSettings(BaseSettings):
     POSTGRES_PASSWORD: str = "root"
     DRIVER_NAME: str = "postgresql"
     PORT: int = 5432
-    USE_ALEMBIC: bool = True
+    USE_ALEMBIC_LOCAL: bool = True
 
     def construct_url(self) -> URL:
-        host = "localhost" if self.USE_ALEMBIC else "db"
+        host = "localhost" if self.USE_ALEMBIC_LOCAL else "db"
 
         return URL.create(
             host=host,

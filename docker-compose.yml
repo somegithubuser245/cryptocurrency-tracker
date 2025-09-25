@@ -10,7 +10,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - REDIS_HOST=redis
-      - USE_ALEMBIC=false
+      - USE_ALEMBIC_LOCAL=false
     depends_on:
       - redis
 
