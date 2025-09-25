@@ -54,7 +54,7 @@ def insert_exchange_names(exchange_name: str, crypto_ids: list[str], session: DB
         logger.exception(msg)
 
 
-def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list[int]:
+def get_arbitrable_rows(threshold: int, session: DBSessionDep) -> list[SupportedExchangesByCrypto]:
     """
     Find all pairs with at least @threshold available exchanges
 
@@ -71,11 +71,10 @@ def get_arbitrable_with_threshold(threshold: int, session: DBSessionDep) -> list
     )
     result = session.execute(stmt).scalars().all()
 
-    stmt = select(SupportedExchangesByCrypto.id).where(
+    stmt = select(SupportedExchangesByCrypto).where(
         SupportedExchangesByCrypto.crypto_id.in_(result)
     )
-    result = session.execute(stmt).scalars().all()
-    return list(result)
+    return session.execute(stmt).scalars().all()
 
 
 def get_params_for_crypto_dto(
