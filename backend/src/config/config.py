@@ -12,6 +12,12 @@ class RedisSettings(BaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_DB: int = 0
+    REDIS_LOCAL: bool = True
+
+    def construct_celery_url(self) -> str:
+        redis_networkname = "localhost" if self.REDIS_LOCAL else "redis"
+        return f"{self.REDIS_HOST}://{redis_networkname}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
 
 class CryptoBatchSettings(BaseSettings):
     DEFAULT_THRESHOLD: int = 2 # min amount of supported exchanges per pair

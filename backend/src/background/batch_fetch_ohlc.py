@@ -3,6 +3,7 @@ import json
 import logging
 from typing import Annotated
 
+from background.celery.celery_spreads import scan_through_and_validate
 from background.db.batch_status import init_batch_status, update_batch_status_cached
 from background.db.db_pairs import (
     get_arbitrable_rows,
@@ -27,7 +28,7 @@ class BatchFetcher:
         data_manager: DataManagerDependency,
         redis_client: RedisClientDependency,
         external_api_caller: CryptoFetcherDependency,
-        chunk_size: int = 100,
+        chunk_size: int,
     ) -> None:
         self.data_manager = data_manager
         self.redis_client = redis_client
@@ -127,6 +128,8 @@ class BatchFetcher:
             session=db,
             crypto_ids=batch_status_crypto_ids,
         )
+        result = scan_through_and_validate.delay(batch_status_crypto_ids)
+        logger.info(f"celery worker result: {result.get()}")
 
         await asyncio.sleep(batch_settings.DEFAULT_SLEEP_TIME)
 

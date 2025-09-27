@@ -2,12 +2,17 @@ from typing import Annotated, Generator
 
 from config.database import engine
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 
-def get_session() -> Generator[Session, None, None]:
-    with Session(engine) as session:
+def get_session_dep() -> Generator[Session, None, None]:
+    Session = sessionmaker(engine)
+    with Session() as session:
         yield session
 
-DBSessionDep = Annotated[Session, Depends(get_session)]
+def get_session_as_is() -> Generator[Session, None, None]:
+    Session = sessionmaker(engine)
+    return Session()
+
+DBSessionDep = Annotated[Session, Depends(get_session_dep)]
 

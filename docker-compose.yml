@@ -11,8 +11,10 @@ services:
       - PYTHONUNBUFFERED=1
       - REDIS_HOST=redis
       - USE_ALEMBIC_LOCAL=false
+      - REDIS_LOCAL=false
     depends_on:
       - redis
+      - db
 
   frontend:
     build: ./frontend
