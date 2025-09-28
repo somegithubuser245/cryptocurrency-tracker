@@ -113,22 +113,28 @@ class BatchFetcher:
         dto_chunk: list[CryptoPair],
         db: DBSessionDep,
     ) -> None:
-        batch_status_crypto_ids = [dto.crypto_id for dto in dto_chunk]
         tasks = [dto.get_ohlc(self.external_api_caller) for dto in dto_chunk]
 
         # asyncio.gather returns the list saving the initial sequence
         ordered_ohlc = await asyncio.gather(*tasks)
 
+        cached_ce_ids = []
         for dto, ohlc in zip(dto_chunk, ordered_ohlc, strict=True):
+            # skip corrupted / unfilled ohlc
+            # won't flag as cached in status table
+            if not ohlc:
+                continue
+
             self.redis_client.set(
                 key=str(dto), data=json.dumps(ohlc), ttl=batch_settings.DEFAULT_OHLC_TTL
             )
+            cached_ce_ids.append(dto.crypto_id)
 
         update_batch_status_cached(
             session=db,
-            crypto_ids=batch_status_crypto_ids,
+            ce_ids=cached_ce_ids,
         )
-        run_chunk_compute(dtos_ids = batch_status_crypto_ids)
+        run_chunk_compute(ce_ids = cached_ce_ids)
 
         await asyncio.sleep(batch_settings.DEFAULT_SLEEP_TIME)
 

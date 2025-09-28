@@ -5,14 +5,19 @@ class Spread:
     def __init__(
         self,
         raw_frames: list[pd.DataFrame],
-        exchange_names: list[str],
+        exchange_names: list[str] | None = None,
+        ce_ids: list[int] | None = None
     ) -> None:
         """
         Based on raw frames for single token, calculate spread
         Then initilize DataFrame attribute
         """
+        if not ce_ids and not exchange_names:
+            raise ValueError("NO INDEX IDENTIFICATORS PROVIDED")
+
+        keys = ce_ids or exchange_names
         spreads_series = (
-            pd.concat(raw_frames, keys=exchange_names)
+            pd.concat(raw_frames, keys=keys)
             .unstack(level=0)
             # main function for calculation
             ["close"].apply(self._calculate_max_spread_per_row, axis=1)

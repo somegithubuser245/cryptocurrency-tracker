@@ -30,11 +30,11 @@ def init_batch_status(
 
 def update_batch_status_cached(
     session: DBSessionDep,
-    crypto_ids: list[int],
+    ce_ids: list[int],
 ) -> None:
     """
     Update status field for cache
     """
-    stmt = update(BatchStatus).where(BatchStatus.id.in_(crypto_ids)).values({"saved_cache": True})
+    stmt = update(BatchStatus).where(BatchStatus.id.in_(ce_ids)).values({"saved_cache": True})
     session.execute(stmt)
     session.commit()
