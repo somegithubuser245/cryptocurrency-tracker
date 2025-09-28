@@ -6,13 +6,11 @@ class Spread:
         self,
         raw_frames: list[pd.DataFrame],
         exchange_names: list[str],
-        pair_name: str
     ) -> None:
         """
         Based on raw frames for single token, calculate spread
         Then initilize DataFrame attribute
         """
-        self.pair_name = pair_name
         spreads_series = (
             pd.concat(raw_frames, keys=exchange_names)
             .unstack(level=0)

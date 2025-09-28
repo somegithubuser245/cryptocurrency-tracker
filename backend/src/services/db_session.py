@@ -10,7 +10,7 @@ def get_session_dep() -> Generator[Session, None, None]:
     with Session() as session:
         yield session
 
-def get_session_as_is() -> Generator[Session, None, None]:
+def get_session_raw() -> Session:
     Session = sessionmaker(engine)
     return Session()
 

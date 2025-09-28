@@ -15,7 +15,7 @@ class CryptoPair:
         self.supported_exchange = supported_exchange
         self.interval = interval
 
-    async def get_ohlc(self, crypto_fetcher: CryptoFetcherDependency) -> list[list[float]]:
+    async def get_ohlc(self, crypto_fetcher: CryptoFetcherDependency) -> list[list[float]] | None:
         """
         Do some magic by passing in an external api caller
 
@@ -28,4 +28,4 @@ class CryptoPair:
         )
 
     def __repr__(self) -> str:
-        return f"OHLC:{self.crypto_id}:{self.crypto_name}:{self.supported_exchange}"
+        return f"OHLC:{self.crypto_id}"

@@ -7,7 +7,7 @@ from services.external_api_caller import CryptoFetcher
 
 
 @lru_cache()
-def get_cacher() -> RedisClient:
+def get_redis_client() -> RedisClient:
     return RedisClient()
 
 
@@ -17,5 +17,5 @@ def get_crypto_fetcher() -> CryptoFetcher:
 
 
 # init heavy dependencies with lru cache singleton patterns
-RedisClientDependency = Annotated[RedisClient, Depends(get_cacher)]
+RedisClientDependency = Annotated[RedisClient, Depends(get_redis_client)]
 CryptoFetcherDependency = Annotated[CryptoFetcher, Depends(get_crypto_fetcher)]

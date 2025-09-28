@@ -1,6 +1,8 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: backend
+      dockerfile: Dockerfile.backend-server
     ports:
       - "8000:8000"
     volumes:
@@ -12,6 +14,21 @@ services:
       - REDIS_HOST=redis
       - USE_ALEMBIC_LOCAL=false
       - REDIS_LOCAL=false
+    depends_on:
+      - redis
+      - db
+
+  celery:
+    build:
+      context: backend
+      dockerfile: Dockerfile.celery-worker
+    volumes:
+      - ./backend/src:/app
+      - /src/__pycache__
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_LOCAL=false
+      - USE_ALEMBIC_LOCAL=false
     depends_on:
       - redis
       - db

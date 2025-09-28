@@ -15,8 +15,8 @@ class CryptoFetcher:
     def __init__(self) -> None:
         self._exchanges: dict[str, ccxt.Exchange] = {}
 
-    async def get_ohlc_with_request(self, request: PriceTicker) -> list[list[float]]:
-        return self.get_ohlc_parameterised(
+    async def get_ohlc_with_request(self, request: PriceTicker) -> list[list[float]] | None:
+        return await self.get_ohlc_parameterised(
             crypto_name=request.crypto_name.replace("-", "/"),
             exchange_name=request.exchange_name,
             interval=request.interval
@@ -28,7 +28,7 @@ class CryptoFetcher:
         crypto_name: str,
         exchange_name: str,
         interval: str,
-    ) -> list[list[float]]:
+    ) -> list[list[float]] | None:
         exchange = self._get_saved_exchange(exchange_name)
 
         try:
