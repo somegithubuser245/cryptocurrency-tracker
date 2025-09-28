@@ -28,4 +28,5 @@ class TimeframeSynchronizer:
 
         return [df.loc[common_index] for df in dataframes_raw]
 
+
 TimeframesSyncDependency = Annotated[TimeframeSynchronizer, Depends()]

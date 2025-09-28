@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, UniqueConstraint
+
+from sqlalchemy import TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -42,10 +43,7 @@ class BatchStatus(Base):
         ForeignKey(SupportedExchangesByCrypto.id),
         primary_key=True,
     )
-    crypto_id: Mapped[int] = mapped_column(
-        ForeignKey(CryptoPairName.id),
-        nullable=False
-    )
+    crypto_id: Mapped[int] = mapped_column(ForeignKey(CryptoPairName.id), nullable=False)
     interval: Mapped[str] = mapped_column(nullable=False)
 
     # actual status columns
@@ -60,8 +58,7 @@ class ComputedSpreadMax(Base):
     __tablename__ = "computed_spread_max"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    time: Mapped[datetime] = mapped_column(nullable=False)
+    time = mapped_column(TIMESTAMP, nullable=False)
     high_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))
     low_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))
     spread_percent: Mapped[float] = mapped_column(nullable=False)
-    

@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Annotated
 
-from background.celery.celery_spreads import run_chunk_compute, scan_through_and_validate
+from background.celery.celery_spreads import run_chunk_compute
 from background.db.batch_status import init_batch_status, update_batch_status_cached
 from background.db.db_pairs import (
     get_arbitrable_rows,
@@ -134,7 +134,7 @@ class BatchFetcher:
             session=db,
             ce_ids=cached_ce_ids,
         )
-        run_chunk_compute(ce_ids = cached_ce_ids)
+        run_chunk_compute(ce_ids=cached_ce_ids)
 
         await asyncio.sleep(batch_settings.DEFAULT_SLEEP_TIME)
 

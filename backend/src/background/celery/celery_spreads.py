@@ -1,15 +1,16 @@
 import json
 
-from celery import chain, group
 from background.celery.celery_conf import scan_app
-from background.db.celery import get_ce_ids_by_crypto_id, get_exchange_name_by_id, scan_available_ohlc
+from background.db.celery import (
+    get_ce_ids_by_crypto_id,
+    insert_computed_spread,
+    scan_available_ohlc,
+)
+from celery import chain, group
+from celery.utils.log import get_task_logger
 from data_manipulation.spread_object import Spread
 from data_manipulation.timeframes_equalizer import TimeframeSynchronizer
-from services.caching import RedisClient
 from services.db_session import get_session_raw
-
-from celery.utils.log import get_task_logger
-
 from utils.dependencies.dependencies import get_redis_client
 
 logger = get_task_logger(__name__)
@@ -27,19 +28,19 @@ def get_cached_pairs_list(dtos_ids: list[int]):
     # get list grouped by ohlc with same crypto name
     return scan_available_ohlc(session=session, dtos_ids=dtos_ids)
 
+
 @scan_app.task
 def spawn_chunk_computes(crypto_ids: list[int]):
-    spread_grouped = group(compute_cross_exchange_spread.s(
-        crypto_id
-    ) for crypto_id in crypto_ids)
+    spread_grouped = group(compute_cross_exchange_spread.s(crypto_id) for crypto_id in crypto_ids)
     return spread_grouped.apply_async()
+
 
 @scan_app.task
 def compute_cross_exchange_spread(crypto_id: int):
     """
     Heavy and hacky method
 
-    Many things happen, and i'm not sure how to 
+    Many things happen, and i'm not sure how to
     best refactor / optimize it
 
     Currently doesn't save computed result, only logs it
@@ -48,10 +49,8 @@ def compute_cross_exchange_spread(crypto_id: int):
     redis_client = get_redis_client()
 
     ohlc_raw_grouped = []
-    
-    crypto_exchange_ids = get_ce_ids_by_crypto_id(
-        session=session, crypto_id=crypto_id
-    )
+
+    crypto_exchange_ids = get_ce_ids_by_crypto_id(session=session, crypto_id=crypto_id)
     for ce_id in crypto_exchange_ids:
         redis_key = f"OHLC:{ce_id}"
         ohlc_raw = redis_client.get(redis_key)
@@ -63,20 +62,17 @@ def compute_cross_exchange_spread(crypto_id: int):
 
         ohlc_raw_grouped.append(serialized)
 
+    timestamp_syncer = TimeframeSynchronizer()
+
+    dataframes_grouped = timestamp_syncer.sync_many(ohlc_raw_grouped)
+
+    spread_obj = Spread(
+        raw_frames=dataframes_grouped, ce_ids=crypto_exchange_ids, crypto_id=crypto_id
+    )
+    insert_computed_spread(session=session, computed_ohlc=spread_obj.get_max_spread())
     session.close()
 
-    timestamp_syncer = TimeframeSynchronizer()
-    
-    dataframes_grouped = timestamp_syncer.sync_many(ohlc_raw_grouped)
-    spread_obj = Spread(
-        raw_frames=dataframes_grouped,
-        ce_ids=crypto_exchange_ids,
-    )
-    msg = f"SPREAD FOR {crypto_id}: {str(spread_obj.get_max_spread())}"
-    logger.info(msg)
-    return spread_obj.get_max_spread()
 
-        
 @scan_app.task
 def scan_through_and_validate(dtos_ids: list[int]):
     """
