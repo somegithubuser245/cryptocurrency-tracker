@@ -1,15 +1,18 @@
+import logging
+
 import pandas as pd
 
 # derived from DB Model names
 DEFAULT_COLUMN_NAMES = ["spread", "spread_percent", "high_exchange_id", "low_exchange_id"]
 DEFAULT_COLUMNS_TO_KEEP = ["time", "spread_percent", "high_exchange_id", "low_exchange_id"]
 
+logger = logging.getLogger(__name__)
+
 
 class Spread:
     def __init__(
         self,
         raw_frames: list[pd.DataFrame],
-        crypto_id: int,
         preferred_column_names: list[str] | None = DEFAULT_COLUMN_NAMES,
         exchange_names: list[str] | None = None,
         ce_ids: list[int] | None = None,
@@ -22,9 +25,10 @@ class Spread:
         Defaults to DB Model of ComputedSpreadMax
         """
         if not ce_ids and not exchange_names:
-            raise ValueError("NO INDEX IDENTIFICATORS PROVIDED")
+            msg = "NO INDEX IDENTIFICATORS PROVIDED"
+            logger.error(msg)
+            raise ValueError(msg)
 
-        self.crypto_id = crypto_id
         self._cnames = preferred_column_names
         keys = ce_ids or exchange_names
 

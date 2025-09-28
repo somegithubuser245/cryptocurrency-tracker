@@ -16,7 +16,7 @@ def get_ce_ids_by_crypto_id(session: Session, crypto_id: int) -> list[int]:
     return list(session.execute(stmt).scalars().all())
 
 
-def scan_available_ohlc(session: Session, dtos_ids: list[int]):
+def scan_available_ohlc(session: Session, dtos_ids: list[int]) -> None:
     """
     Get all cached unique crypto ids
     Grouped by crypto id
@@ -29,18 +29,22 @@ def scan_available_ohlc(session: Session, dtos_ids: list[int]):
     return result_ids
 
 
-def mark_as_completed(session: Session, crypto_id: int):
-    stmt = (
-        update(BatchStatus.difference_found).where(BatchStatus.crypto_id == crypto_id).values(True)
-    )
-    session.execute(stmt)
-    session.commit()
-
-
-def insert_computed_spread(session: Session, computed_ohlc: dict):
+def save_compute_mark_complete(
+    session: Session,
+    crypto_id: int,
+    computed_spread: dict,
+) -> None:
     """
     Insert rows with computed ohlc straight from pandas
     """
-    stmt = insert(ComputedSpreadMax).values(computed_ohlc)
-    session.execute(stmt)
+    values_with_id = {"id": crypto_id, **computed_spread}
+
+    stmt_insert = insert(ComputedSpreadMax).values(values_with_id)
+    session.execute(stmt_insert)
+    session.flush()
+
+    stmt_update_status = (
+        update(BatchStatus).where(BatchStatus.crypto_id == crypto_id).values(difference_found=True)
+    )
+    session.execute(stmt_update_status)
     session.commit()

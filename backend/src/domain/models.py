@@ -57,7 +57,10 @@ class BatchStatus(Base):
 class ComputedSpreadMax(Base):
     __tablename__ = "computed_spread_max"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        ForeignKey(CryptoPairName.id),
+        primary_key=True,
+    )
     time = mapped_column(TIMESTAMP, nullable=False)
     high_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))
     low_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))

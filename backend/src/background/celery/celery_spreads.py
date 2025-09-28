@@ -3,7 +3,7 @@ import json
 from background.celery.celery_conf import scan_app
 from background.db.celery import (
     get_ce_ids_by_crypto_id,
-    insert_computed_spread,
+    save_compute_mark_complete,
     scan_available_ohlc,
 )
 from celery import chain, group
@@ -62,27 +62,10 @@ def compute_cross_exchange_spread(crypto_id: int):
 
         ohlc_raw_grouped.append(serialized)
 
-    timestamp_syncer = TimeframeSynchronizer()
+    dataframes_grouped = TimeframeSynchronizer().sync_many(ohlc_raw_grouped)
+    spread_obj = Spread(raw_frames=dataframes_grouped, ce_ids=crypto_exchange_ids)
 
-    dataframes_grouped = timestamp_syncer.sync_many(ohlc_raw_grouped)
-
-    spread_obj = Spread(
-        raw_frames=dataframes_grouped, ce_ids=crypto_exchange_ids, crypto_id=crypto_id
+    save_compute_mark_complete(
+        session=session, crypto_id=crypto_id, computed_spread=spread_obj.get_max_spread()
     )
-    insert_computed_spread(session=session, computed_ohlc=spread_obj.get_max_spread())
     session.close()
-
-
-@scan_app.task
-def scan_through_and_validate(dtos_ids: list[int]):
-    """
-    Scans through the db and validates if dtos in-memory
-    have been initialized in the db
-    """
-    session = get_session_raw()
-    length_db = len(scan_available_ohlc(session, dtos_ids=dtos_ids))
-    session.close()
-    length_dtos = len(dtos_ids)
-
-    logger.info(f"CELERY EXEC: \t{length_db}-db  \t{length_dtos}--dto")
-    return length_db == length_dtos
