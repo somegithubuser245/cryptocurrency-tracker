@@ -2,7 +2,18 @@ services:
   backend:
     build:
       context: backend
-      dockerfile: Dockerfile.backend-server
+    command:
+      [
+        "uvicorn",
+        "routes.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+        "--log-level",
+        "debug",
+      ]
     ports:
       - "8000:8000"
     volumes:
@@ -21,7 +32,15 @@ services:
   celery:
     build:
       context: backend
-      dockerfile: Dockerfile.celery-worker
+    command:
+      [
+        "celery",
+        "-A",
+        "background.celery.celery_conf",
+        "worker",
+        "--loglevel",
+        "INFO",
+      ]
     volumes:
       - ./backend/src:/app
       - /src/__pycache__
@@ -34,9 +53,9 @@ services:
       - db
 
   flower:
-    build: 
+    build:
       context: backend
-      dockerfile: Dockerfile.celery-flower
+    command: ["celery", "-A", "background.celery.celery_conf", "flower"]
     environment:
       - REDIS_LOCAL=false
       - USE_ALEMBIC_LOCAL=false
