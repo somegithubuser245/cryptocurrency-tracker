@@ -1,6 +1,6 @@
 from domain.models import BatchStatus
 from services.db_session import DBSessionDep
-from sqlalchemy import insert, update
+from sqlalchemy import insert, select, update
 
 
 def init_batch_status(
