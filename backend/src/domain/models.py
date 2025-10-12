@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -61,7 +59,7 @@ class ComputedSpreadMax(Base):
         ForeignKey(CryptoPairName.id),
         primary_key=True,
     )
-    time = mapped_column(TIMESTAMP, nullable=False)
+    time = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     high_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))
     low_exchange_id: Mapped[int] = mapped_column(ForeignKey(SupportedExchangesByCrypto.id))
     spread_percent: Mapped[float] = mapped_column(nullable=False)

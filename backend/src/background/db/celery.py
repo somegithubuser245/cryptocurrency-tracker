@@ -1,7 +1,7 @@
 from domain.models import BatchStatus, ComputedSpreadMax
-from sqlalchemy import and_, func, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.dialects.postgresql import insert as upsert
+from sqlalchemy.orm import Session
 
 
 def get_ce_ids_by_crypto_id(session: Session, crypto_id: int) -> list[int]:

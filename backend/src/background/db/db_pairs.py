@@ -3,7 +3,7 @@ from typing import Tuple
 
 from domain.models import CryptoPairName, SupportedExchangesByCrypto
 from services.db_session import DBSessionDep
-from sqlalchemy import Row, Sequence, func, insert, select
+from sqlalchemy import Row, Sequence, func, select
 from sqlalchemy.dialects.postgresql import insert as upsert
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def insert_exchange_names(exchange_name: str, crypto_ids: list[str], session: DB
         )
         session.execute(stmt)
         session.commit()
-    except Exception as e:
+    except Exception:
         msg = f"Failed to insert exchange names for {exchange_name}"
         logger.exception(msg)
 

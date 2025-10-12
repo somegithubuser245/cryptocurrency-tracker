@@ -61,14 +61,14 @@ class Spread:
         """
         Get maximum spread found for the whole pair
         """
-        # reset index
+        if self.spreads_df.empty:
+            return {}
         # .loc returns a Series, which means that index won't be accessible
         # this is the only reason for conversion
-        unindexed = self.spreads_df.reset_index()
-        max_timestamp = unindexed["spread_percent"].idxmax()
-
-        max_row = unindexed.loc[max_timestamp]
-        return max_row[columns_to_keep].to_dict()
+        max_spread_row = self.spreads_df.loc[self.spreads_df["spread_percent"].idxmax()]
+        max_spread_dict = max_spread_row.to_dict()
+        max_spread_dict["time"] = max_spread_row.name
+        return {col: max_spread_dict.get(col) for col in columns_to_keep}
 
     def get_as_dict(self) -> dict:
         return self.spreads_df.to_dict(orient="index")

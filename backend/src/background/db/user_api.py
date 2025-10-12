@@ -3,6 +3,7 @@ from routes.models.schemas import ComputedSpreadResponse
 from services.db_session import DBSessionDep
 from sqlalchemy import Integer, func, select
 from sqlalchemy.orm import aliased
+from utils.dependencies.timestamp_norm import normalize_timestamp
 
 
 def get_batch_status_counts(session: DBSessionDep) -> dict[str, int]:
@@ -53,7 +54,7 @@ def get_computed_spreads(session: DBSessionDep) -> list[ComputedSpreadResponse]:
     return [
         ComputedSpreadResponse(
             crypto_name=row.crypto_name,
-            time=row.time,
+            time=normalize_timestamp(row.time),
             spread_percent=row.spread_percent,
             high_exchange=row.high_exchange,
             low_exchange=row.low_exchange,

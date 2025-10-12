@@ -16,13 +16,13 @@ from utils.dependencies.dependencies import get_redis_client
 logger = get_task_logger(__name__)
 
 
-def run_chunk_compute(ce_ids: list[int]):
+def run_chunk_compute(ce_ids: list[int]) -> None:
     main_process = chain(get_cached_pairs_list.s(ce_ids), spawn_chunk_computes.s())
     main_process.apply_async()
 
 
 @scan_app.task
-def get_cached_pairs_list(dtos_ids: list[int]):
+def get_cached_pairs_list(dtos_ids: list[int]) -> list[int]:
     session = get_session_raw()
 
     # get list grouped by ohlc with same crypto name
@@ -36,7 +36,7 @@ def spawn_chunk_computes(crypto_ids: list[int]):
 
 
 @scan_app.task
-def compute_cross_exchange_spread(crypto_id: int):
+def compute_cross_exchange_spread(crypto_id: int) -> None:
     """
     Heavy and hacky method
 

@@ -35,6 +35,11 @@ class CryptoBatchSettings(BaseSettings):
     DEFAULT_SLEEP_TIME: float = 1
 
 
+class LocalTimeZone(BaseSettings):
+    # used to convert UTC in computed spreads
+    TIMEZONE: str = "Europe/Berlin"
+
+
 CACHE_TTL_CONFIG: dict = {
     "5m": 300,
     "30m": 1800,
