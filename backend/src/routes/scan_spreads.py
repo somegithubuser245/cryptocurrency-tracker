@@ -14,7 +14,20 @@ logger = logging.getLogger(__name__)
 spreads_router = APIRouter(prefix="/spreads")
 
 
-@spreads_router.post("/all-at-once")
+@spreads_router.post("/init-pairs")
+async def init_pairs(
+    batch_fetcher: BatchFetcherDependency,
+    db: DBSessionDep,
+) -> bool:
+    """
+    Initialize crypto pairs and supported exchanges in the database.
+    """
+    # no bg tasks used, as we need to know if
+    # pairs were sucessfully initted
+    return await batch_fetcher.init_pairs_db(db=db)
+
+
+@spreads_router.post("/compute-all")
 async def get_all_spreads(
     batch_fetcher: BatchFetcherDependency,
     db: DBSessionDep,
@@ -25,19 +38,6 @@ async def get_all_spreads(
     """
     bg_tasks.add_task(batch_fetcher.download_all_ohlc, db)
     return TaskStatusResponse(status="success", message="Batch OHLC download started")
-
-
-@spreads_router.post("/init-pairs")
-async def init_pairs(
-    batch_fetcher: BatchFetcherDependency,
-    bg_tasks: BackgroundTasks,
-    db: DBSessionDep,
-) -> TaskStatusResponse:
-    """
-    Initialize crypto pairs and supported exchanges in the database.
-    """
-    bg_tasks.add_task(batch_fetcher.init_pairs_db, db)
-    return TaskStatusResponse(status="success", message="Pairs initialization started")
 
 
 @spreads_router.get("/batch-status")

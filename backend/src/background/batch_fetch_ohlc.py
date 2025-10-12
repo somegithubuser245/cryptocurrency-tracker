@@ -36,7 +36,7 @@ class BatchFetcher:
 
         self.CHUNK_SIZE = chunk_size
 
-    async def init_pairs_db(self, db: DBSessionDep) -> None:
+    async def init_pairs_db(self, db: DBSessionDep) -> bool:
         exchanges_with_symbols = await self.external_api_caller.get_exchanges_with_markets(
             list(SUPPORTED_EXCHANGES.values())
         )
@@ -45,6 +45,8 @@ class BatchFetcher:
             exchange_symbols = exchange.symbols
             insert_or_update_pairs(exchange.symbols, db)
             insert_exchange_names(exchange_name, exchange_symbols, db)
+
+        return True
 
     def create_arb_pairs_objects(
         self,

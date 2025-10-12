@@ -2,9 +2,11 @@ import { API_CONFIG } from './config';
 
 // Generic API client
 class ApiClient {
+  private baseURL: string;
   private timeout: number;
 
-  constructor(_baseURL: string, timeout: number = API_CONFIG.TIMEOUT) {
+  constructor(baseURL: string, timeout: number = API_CONFIG.TIMEOUT) {
+    this.baseURL = baseURL;
     this.timeout = timeout;
   }
 
@@ -16,7 +18,8 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const response = await fetch(url, {
+      const fullURL = url.startsWith('http') ? url : `${this.baseURL}${url}`;
+      const response = await fetch(fullURL, {
         ...options,
         signal: controller.signal,
       });
