@@ -6,7 +6,7 @@ from config.config import LocalTimeZone
 try:
     LOCAL_TZ = ZoneInfo(LocalTimeZone().TIMEZONE)
 except Exception:
-    # if give .astimezone() None value
+    # if .astimezone() is given a None value,
     # it will use system default timezone
     LOCAL_TZ = None
 

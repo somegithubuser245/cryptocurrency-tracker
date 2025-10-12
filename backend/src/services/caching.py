@@ -29,11 +29,9 @@ class RedisClient:
 
     def _init_client(self) -> redis.Redis | None:
         r_config = RedisSettings()
-        client = redis.Redis(
+        return redis.Redis(
             host=r_config.REDIS_HOST, port=r_config.REDIS_PORT, db=r_config.REDIS_DB
         )
-        
-        return client
 
     def healthcheck(self) -> bool:
         if not self.client:
