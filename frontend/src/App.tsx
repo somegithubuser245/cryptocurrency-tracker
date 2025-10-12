@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { initializeAndComputeSpreads, getBatchStatus } from "./api/services";
 import type { BatchStatusSummaryResponse } from "./types";
+import ComputedSpreadsTable from "./components/ComputedSpreadsTable";
 
 function App() {
   const [batchStatus, setBatchStatus] =
@@ -296,6 +297,9 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Computed Spreads Table */}
+        <ComputedSpreadsTable />
       </div>
     </div>
   );
