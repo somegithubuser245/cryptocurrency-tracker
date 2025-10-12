@@ -1,9 +1,13 @@
 import logging
 
 from background.batch_fetch_ohlc import BatchFetcherDependency
-from background.db.user_api import get_computed_spreads, get_current_status
+from background.db.user_api import get_batch_status_counts, get_computed_spreads
 from fastapi import APIRouter, BackgroundTasks
-from routes.models.schemas import BatchStatusResponse, ComputedSpreadResponse, TaskStatusResponse
+from routes.models.schemas import (
+    BatchStatusSummaryResponse,
+    ComputedSpreadResponse,
+    TaskStatusResponse,
+)
 from services.db_session import DBSessionDep
 
 logger = logging.getLogger(__name__)
@@ -37,20 +41,30 @@ async def init_pairs(
 
 
 @spreads_router.get("/batch-status")
-def get_status(db: DBSessionDep) -> list[BatchStatusResponse]:
+def get_status(db: DBSessionDep) -> BatchStatusSummaryResponse:
     """
-    Get current batch processing status for all crypto pairs.
+    Get aggregate batch processing status summary.
 
     Returns:
-        List of status objects containing:
-        - crypto_name: Name of the cryptocurrency pair
-        - exchange: Exchange name
-        - interval: Time interval being processed
-        - cached: Whether OHLC data is cached in Redis
-        - spread_computed: Whether spread has been computed
-        - saved_to_db: Whether result is saved to database
+        Summary object containing:
+        - total_pairs: Total number of crypto-exchange pairs being tracked
+        - cached: Number of pairs with OHLC data cached in Redis
+        - spreads_computed: Number of pairs with computed spreads
+        - processing_progress: Percentage of pairs cached (0-100)
     """
-    return get_current_status(session=db)
+    counts = get_batch_status_counts(session=db)
+
+    # Calculate progress percentage
+    total = counts["total_pairs"]
+    cached = counts["cached"]
+    progress = (cached / total * 100.0) if total > 0 else 0.0
+
+    return BatchStatusSummaryResponse(
+        total_pairs=total,
+        cached=cached,
+        spreads_computed=counts["spreads_computed"],
+        processing_progress=round(progress, 2),
+    )
 
 
 @spreads_router.get("/computed")

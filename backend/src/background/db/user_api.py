@@ -1,42 +1,28 @@
 from domain.models import BatchStatus, ComputedSpreadMax, CryptoPairName, SupportedExchangesByCrypto
-from routes.models.schemas import BatchStatusResponse, ComputedSpreadResponse
+from routes.models.schemas import ComputedSpreadResponse
 from services.db_session import DBSessionDep
-from sqlalchemy import select
+from sqlalchemy import Integer, func, select
 from sqlalchemy.orm import aliased
 
 
-def get_current_status(session: DBSessionDep) -> list[BatchStatusResponse]:
+def get_batch_status_counts(session: DBSessionDep) -> dict[str, int]:
     """
-    Get current batch processing status for all crypto pairs.
-    Returns a list with crypto name, exchange name, interval, and status flags.
+    Get aggregate counts for batch processing status.
+    Returns dictionary with total, cached, and spreads_computed counts.
     """
-    stmt = (
-        select(
-            CryptoPairName.crypto_name,
-            SupportedExchangesByCrypto.supported_exchange,
-            BatchStatus.interval,
-            BatchStatus.saved_cache,
-            BatchStatus.difference_found,
-            BatchStatus.saved_db,
-        )
-        .join(SupportedExchangesByCrypto, BatchStatus.id == SupportedExchangesByCrypto.id)
-        .join(CryptoPairName, BatchStatus.crypto_id == CryptoPairName.id)
-        .order_by(CryptoPairName.crypto_name, SupportedExchangesByCrypto.supported_exchange)
+    stmt = select(
+        func.count(BatchStatus.id).label("total"),
+        func.sum(func.cast(BatchStatus.saved_cache, Integer)).label("cached"),
+        func.sum(func.cast(BatchStatus.difference_found, Integer)).label("spreads_computed"),
     )
 
-    results = session.execute(stmt).all()
+    result = session.execute(stmt).one()
 
-    return [
-        BatchStatusResponse(
-            crypto_name=row.crypto_name,
-            exchange=row.supported_exchange,
-            interval=row.interval,
-            cached=row.saved_cache,
-            spread_computed=row.difference_found,
-            saved_to_db=row.saved_db,
-        )
-        for row in results
-    ]
+    return {
+        "total_pairs": result.total or 0,
+        "cached": result.cached or 0,
+        "spreads_computed": result.spreads_computed or 0,
+    }
 
 
 def get_computed_spreads(session: DBSessionDep) -> list[ComputedSpreadResponse]:

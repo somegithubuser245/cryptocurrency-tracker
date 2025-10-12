@@ -21,15 +21,13 @@ class PriceTicker(RedisCacheble):
     interval: str = "1h"
 
 
-class BatchStatusResponse(BaseModel):
-    """Response model for batch processing status."""
+class BatchStatusSummaryResponse(BaseModel):
+    """Aggregate batch processing status summary."""
 
-    crypto_name: str
-    exchange: str
-    interval: str
-    cached: bool
-    spread_computed: bool
-    saved_to_db: bool
+    total_pairs: int
+    cached: int
+    spreads_computed: int
+    processing_progress: float
 
 
 class ComputedSpreadResponse(BaseModel):
