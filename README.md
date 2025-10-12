@@ -1,4 +1,4 @@
-# Cryptocurrency Tracker
+# Cryptocurrency Spread Detector
 
 A full-stack tool for analyzing historical cryptocurrency spreads. The backend (FastAPI + Celery) ingests OHLCV data from multiple exchanges via CCXT, stores normalized results in Postgres, and makes them available through REST endpoints. The frontend (React + Vite) visualizes batch progress and computed spreads in real time.
 
