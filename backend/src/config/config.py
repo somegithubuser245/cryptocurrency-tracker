@@ -20,15 +20,18 @@ class RedisSettings(BaseSettings):
 
 
 class CryptoBatchSettings(BaseSettings):
-    DEFAULT_THRESHOLD: int = 2 # min amount of supported exchanges per pair
-    DEFAULT_INTERVAL: str = "1h" # just arbitrary, idk the best granularity
+    # min amount of supported exchanges per pair
+    DEFAULT_THRESHOLD: int = 2
+    # just arbitrary, idk the best granularity
+    DEFAULT_INTERVAL: str = "1h"
 
-    DEFAULT_CHUNK_SIZE: int = 100 # arbitrary as well, seems managable
+    # arbitrary as well, seems managable
+    DEFAULT_CHUNK_SIZE: int = 100
     DEFAULT_OHLC_TTL: int = 1000
 
-     # arbitrary, used for sleep between batches
-     # when ohlc is downloaded from external api
-     # with http client
+    # arbitrary, used for sleep between batches
+    # when ohlc is downloaded from external api
+    # with http client
     DEFAULT_SLEEP_TIME: float = 1
 
 
