@@ -128,7 +128,7 @@ class BatchFetcher:
             self.redis_client.set(
                 key=str(dto), data=json.dumps(ohlc), ttl=batch_settings.DEFAULT_OHLC_TTL
             )
-            cached_ce_ids.append(dto.crypto_id)
+            cached_ce_ids.append(dto.ce_id)
 
         update_batch_status_cached(
             session=db,

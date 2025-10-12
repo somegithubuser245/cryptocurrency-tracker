@@ -10,7 +10,7 @@ class CryptoPair:
         supported_exchange: str,
         interval: str,
     ) -> None:
-        self.crypto_id = crypto_id_exchange_unique
+        self.ce_id = crypto_id_exchange_unique
         self.crypto_name = crypto_name
         self.supported_exchange = supported_exchange
         self.interval = interval
@@ -28,4 +28,4 @@ class CryptoPair:
         )
 
     def __repr__(self) -> str:
-        return f"OHLC:{self.crypto_id}"
+        return f"OHLC:{self.ce_id}"
