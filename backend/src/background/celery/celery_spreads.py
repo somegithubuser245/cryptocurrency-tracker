@@ -23,10 +23,9 @@ def run_chunk_compute(ce_ids: list[int]) -> None:
 
 @scan_app.task
 def get_cached_pairs_list(dtos_ids: list[int]) -> list[int]:
-    session = get_session_raw()
-
-    # get list grouped by ohlc with same crypto name
-    return scan_available_ohlc(session=session, dtos_ids=dtos_ids)
+    with get_session_raw() as session:
+        # get list grouped by ohlc with same crypto name
+        return scan_available_ohlc(session=session, dtos_ids=dtos_ids)
 
 
 @scan_app.task
@@ -45,12 +44,13 @@ def compute_cross_exchange_spread(crypto_id: int) -> None:
 
     Currently doesn't save computed result, only logs it
     """
-    session = get_session_raw()
     redis_client = get_redis_client()
 
     ohlc_raw_grouped = []
 
-    crypto_exchange_ids = get_ce_ids_by_crypto_id(session=session, crypto_id=crypto_id)
+    with get_session_raw() as session:
+        crypto_exchange_ids = get_ce_ids_by_crypto_id(session=session, crypto_id=crypto_id)
+
     for ce_id in crypto_exchange_ids:
         redis_key = f"OHLC:{ce_id}"
         ohlc_raw = redis_client.get(redis_key)
@@ -65,7 +65,7 @@ def compute_cross_exchange_spread(crypto_id: int) -> None:
     dataframes_grouped = TimeframeSynchronizer().sync_many(ohlc_raw_grouped)
     spread_obj = Spread(raw_frames=dataframes_grouped, ce_ids=crypto_exchange_ids)
 
-    save_compute_mark_complete(
-        session=session, crypto_id=crypto_id, computed_spread=spread_obj.get_max_spread()
-    )
-    session.close()
+    with get_session_raw() as session:
+        save_compute_mark_complete(
+            session=session, crypto_id=crypto_id, computed_spread=spread_obj.get_max_spread()
+        )

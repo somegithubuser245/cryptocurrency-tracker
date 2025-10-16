@@ -1,6 +1,6 @@
-from domain.models import BatchStatus
+from domain.models import BatchStatus, ComputedSpreadMax
 from services.db_session import DBSessionDep
-from sqlalchemy import insert, update
+from sqlalchemy import delete, insert, update
 
 
 def init_batch_status(
@@ -36,5 +36,19 @@ def update_batch_status_cached(
     Update status field for cache
     """
     stmt = update(BatchStatus).where(BatchStatus.id.in_(ce_ids)).values({"saved_cache": True})
+    session.execute(stmt)
+    session.commit()
+
+
+def delete_tables(
+    session: DBSessionDep,
+) -> None:
+    """
+    Method to delete Tables used for Batch Status and saved Computed spread
+    """
+    stmt = delete(BatchStatus)
+    session.execute(stmt)
+    session.flush()
+    stmt = delete(ComputedSpreadMax)
     session.execute(stmt)
     session.commit()

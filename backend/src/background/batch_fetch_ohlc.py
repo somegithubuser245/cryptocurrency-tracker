@@ -14,7 +14,6 @@ from background.db.db_pairs import (
 from background.dto.crypto_pair import CryptoPair
 from config.config import SUPPORTED_EXCHANGES, CryptoBatchSettings
 from fastapi import Depends
-from services.data_gather import DataManagerDependency
 from services.db_session import DBSessionDep
 from utils.dependencies.dependencies import CryptoFetcherDependency, RedisClientDependency
 
@@ -25,12 +24,10 @@ batch_settings = CryptoBatchSettings()
 class BatchFetcher:
     def __init__(
         self,
-        data_manager: DataManagerDependency,
         redis_client: RedisClientDependency,
         external_api_caller: CryptoFetcherDependency,
         chunk_size: int,
     ) -> None:
-        self.data_manager = data_manager
         self.redis_client = redis_client
         self.external_api_caller = external_api_caller
 
@@ -143,11 +140,9 @@ class BatchFetcher:
 
 async def get_batch_fetcher(
     redis_client: RedisClientDependency,
-    data_manager: DataManagerDependency,
     external_api_caller: CryptoFetcherDependency,
 ) -> BatchFetcher:
     return BatchFetcher(
-        data_manager=data_manager,
         redis_client=redis_client,
         external_api_caller=external_api_caller,
         chunk_size=batch_settings.DEFAULT_CHUNK_SIZE,
