@@ -1,12 +1,11 @@
 from domain.models import BatchStatus, ComputedSpreadMax, CryptoPairName, SupportedExchangesByCrypto
 from routes.models.schemas import ComputedSpreadResponse
-from services.db_session import DBSessionDep
 from sqlalchemy import Integer, func, select
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import Session, aliased
 from utils.dependencies.timestamp_norm import normalize_timestamp
 
 
-def get_batch_status_counts(session: DBSessionDep) -> dict[str, int]:
+def get_batch_status_counts(session: Session) -> dict[str, int]:
     """
     Get aggregate counts for batch processing status.
     Returns dictionary with total, cached, and spreads_computed counts.
@@ -26,7 +25,7 @@ def get_batch_status_counts(session: DBSessionDep) -> dict[str, int]:
     }
 
 
-def get_computed_spreads(session: DBSessionDep) -> list[ComputedSpreadResponse]:
+def get_computed_spreads(session: Session) -> list[ComputedSpreadResponse]:
     """
     Get all computed spreads with exchange names resolved.
     Returns list with crypto name, timestamp, spread percent, and exchange names.

@@ -17,26 +17,24 @@ spreads_router = APIRouter(prefix="/spreads")
 @spreads_router.post("/init-pairs")
 async def init_pairs(
     batch_fetcher: BatchFetcherDependency,
-    db: DBSessionDep,
 ) -> bool:
     """
     Initialize crypto pairs and supported exchanges in the database.
     """
     # no bg tasks used, as we need to know if
     # pairs were sucessfully initted
-    return await batch_fetcher.init_pairs_db(db=db)
+    return await batch_fetcher.init_pairs_db()
 
 
 @spreads_router.post("/compute-all")
 async def get_all_spreads(
     batch_fetcher: BatchFetcherDependency,
-    db: DBSessionDep,
     bg_tasks: BackgroundTasks,
 ) -> TaskStatusResponse:
     """
     Trigger background task to download all OHLC data for arbitrable pairs.
     """
-    bg_tasks.add_task(batch_fetcher.download_all_ohlc, db)
+    bg_tasks.add_task(batch_fetcher.download_all_ohlc)
     return TaskStatusResponse(status="success", message="Batch OHLC download started")
 
 
