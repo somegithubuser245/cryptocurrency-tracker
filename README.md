@@ -1,6 +1,14 @@
-# Cryptocurrency Spread Detector
+# Cross Exchange Crypto Spread Detector
 
-A full-stack tool for analyzing historical cryptocurrency spreads. The backend (FastAPI + Celery) ingests OHLCV data from multiple exchanges via CCXT, stores normalized results in Postgres, and makes them available through REST endpoints. The frontend (React + Vite) visualizes batch progress and computed spreads in real time.
+A full-stack tool for analyzing historical cross-exchange cryptocurrency spreads. The tool finds max spreads for all pairs available among different exchanges.
+
+What you can tinker with:
+- granularity: 5m, 30m, 1h, 4h etc.
+- exchanges to parse data from - basically all available with ccxt library
+- threshold: min. amount of exchanges that have the same crypto ticker
+
+> Note: you can analyse ohlc in the past only for how far the exchange allows you to fetch its data.
+> The ohlc timestamp set with the shortest time will be taken, as ohlc needs to be aligned among timestamps
 
 ## Project Structure
 
