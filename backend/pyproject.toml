@@ -1,0 +1,51 @@
+[project]
+name = "backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.18.1",
+    "asyncio>=4.0.0",
+    "ccxt>=4.5.34",
+    "celery>=5.6.2",
+    "fastapi>=0.128.0",
+    "flower>=2.0.1",
+    "httpx>=0.28.1",
+    "numpy>=2.4.1",
+    "pandas>=3.0.0",
+    "psycopg2>=2.9.11",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.1",
+    "redis>=7.1.0",
+    "sqlalchemy>=2.0.46",
+    "uvicorn>=0.40.0",
+    "websockets>=16.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+respect-gitignore = true
+src = ["backend", "src", "app"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle (basic style errors)
+  "F",    # pyflakes (undefined names, etc)
+  "W",    # warnings
+  "I",    # isort (import sorting)
+  "N",    # pep8-naming
+  "ANN",  # flake8-annotations (type hints)
+  "B",    # bugbear (common Python pitfalls)
+  "C4",   # flake8-comprehensions (better list/dict comps)
+  "T20",  # flake8-print (catches `print()` in prod code)
+  "RET",  # flake8-return (return type best practices)
+  "SIM",  # flake8-simplify (code simplifications)
+]
+ignore = [
+  "ANN101", # Don't require type hint for self
+  "ANN102", # Don't require type hint for cls
+]
+exclude = ["venv", ".venv", "migrations", "__pycache__"]
+
