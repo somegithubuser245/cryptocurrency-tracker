@@ -46,14 +46,14 @@ class Spread:
         )
 
     def _construct_frame_from_records(self, data: pd.Series, index: pd.Index) -> pd.DataFrame:
-        return pd.DataFrame.from_records(data=data, columns=self._cnames, index=index)
+        return pd.DataFrame(data.tolist(), columns=self._cnames, index=index)
 
-    def _calculate_max_spread_per_row(self, x: pd.Series) -> tuple[int | str]:
-        max, min = x.max(), x.min()
+    def _calculate_max_spread_per_row(self, x: pd.Series) -> tuple[float, float, int | str, int | str]:
+        max_val, min_val = x.max(), x.min()
         max_exchange_name, min_exchange_name = x.idxmax(), x.idxmin()
 
-        spread = max - min
-        spread_percent = spread / ((max + min) / 2) * 100
+        spread = max_val - min_val
+        spread_percent = spread / ((max_val + min_val) / 2) * 100
         return spread, spread_percent, max_exchange_name, min_exchange_name
 
     # api-ready dicts

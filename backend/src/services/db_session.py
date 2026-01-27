@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Annotated, Generator
 
 from config.database import engine
@@ -10,9 +11,13 @@ def get_session_dep() -> Generator[Session, None, None]:
     with Session() as session:
         yield session
 
+
+@contextmanager
 def get_session_raw() -> Session:
     Session = sessionmaker(engine)
-    return Session()
+    with Session() as session:
+        yield session
+        session.close()
+
 
 DBSessionDep = Annotated[Session, Depends(get_session_dep)]
-

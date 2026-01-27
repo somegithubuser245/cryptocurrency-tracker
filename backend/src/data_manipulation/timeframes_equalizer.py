@@ -6,10 +6,11 @@ from fastapi import Depends
 
 logger = logging.getLogger(__name__)
 
+CNAMES = ["time", "open", "high", "low", "close", "volume"]
 
 class TimeframeSynchronizer:
     def __init__(self) -> None:
-        self._cnames = ["time", "open", "high", "low", "close", "volume"]
+        self._cnames = CNAMES
 
     def sync_many(self, ohlc_data_entries: list[list[list[float]]]) -> list[pd.DataFrame]:
         dataframes_raw: list[pd.DataFrame] = []

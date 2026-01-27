@@ -2,14 +2,14 @@ import logging
 from typing import Tuple
 
 from domain.models import CryptoPairName, SupportedExchangesByCrypto
-from services.db_session import DBSessionDep
 from sqlalchemy import Row, Sequence, func, select
 from sqlalchemy.dialects.postgresql import insert as upsert
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 
-def insert_or_update_pairs(pairs: list[str], session: DBSessionDep) -> None:
+def insert_or_update_pairs(pairs: list[str], session: Session) -> None:
     """
     Inserts or updates pairs.
     """
@@ -24,7 +24,7 @@ def insert_or_update_pairs(pairs: list[str], session: DBSessionDep) -> None:
     session.commit()
 
 
-def insert_exchange_names(exchange_name: str, crypto_ids: list[str], session: DBSessionDep) -> None:
+def insert_exchange_names(exchange_name: str, crypto_ids: list[str], session: Session) -> None:
     """
     Inserts a row with a crypto id and the corresponding
     supported exchange
@@ -54,7 +54,7 @@ def insert_exchange_names(exchange_name: str, crypto_ids: list[str], session: DB
         logger.exception(msg)
 
 
-def get_arbitrable_rows(threshold: int, session: DBSessionDep) -> list[SupportedExchangesByCrypto]:
+def get_arbitrable_rows(threshold: int, session: Session) -> list[SupportedExchangesByCrypto]:
     """
     Find all pairs with at least @threshold available exchanges
 
@@ -78,7 +78,7 @@ def get_arbitrable_rows(threshold: int, session: DBSessionDep) -> list[Supported
 
 
 def get_params_for_crypto_dto(
-    ids_list: list[int], session: DBSessionDep
+    ids_list: list[int], session: Session
 ) -> Sequence[Row[Tuple[int, str, str]]]:
     """
     Returns tuples in following order:
